@@ -1,8 +1,0 @@
-{
-    "oversamples": 50,
-    "num_points": 20000,
-    "num_trajectories": 50,
-    "rank": 3,
-    "tikhonov_reg": 1e-4,
-    "kernel_kind": "ugly"
-}
