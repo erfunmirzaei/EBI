@@ -1,0 +1,10 @@
+{
+    "noise_intensity": 1.0,
+    "alpha": [2, 1.75, 1.5, 1.25] ,
+    "mass": 1.0,
+    "gamma": 0.1,
+    "time_step" : 1e-4,
+    "potential": "schwantes_potential",
+    "timesteps_between_samples": 100,
+    "num_simulations": 50
+}
