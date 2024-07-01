@@ -1,0 +1,11 @@
+batch_size: 64
+classes: 5
+eta: 0.05
+eval_up_to_t: 15
+max_epochs: 50
+n_repits: 10
+reduced_rank: false
+rng_seed: 42
+test_samples: 1001
+train_samples: 10001
+val_ratio: 0.2
