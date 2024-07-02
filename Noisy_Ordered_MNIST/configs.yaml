@@ -1,11 +1,15 @@
-batch_size: 64
-classes: 5
+# Data generation parameters
+rng_seed: 42
 eta: 0.05
+classes: 5
+train_samples: 1001
+test_samples: 1001
+val_ratio: 0.2
+
+batch_size: 64
 eval_up_to_t: 15
 max_epochs: 50
+
 n_repits: 10
 reduced_rank: false
-rng_seed: 42
-test_samples: 1001
-train_samples: 10001
-val_ratio: 0.2
+
