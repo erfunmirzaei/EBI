@@ -1,16 +1,15 @@
 import shutil
 from pathlib import Path
 import random
-import ml_confs
 from datasets import DatasetDict, interleave_datasets, load_dataset, Dataset
 
-main_path = Path(__file__).parent
-data_path = str(main_path / "__data__")
-noisy_data_path = str(main_path / "__data__Noisy")
-configs = ml_confs.from_file(main_path / "configs.yaml")
+# main_path = Path(__file__).parent
+# data_path = str(main_path / "__data__")
+# noisy_data_path = str(main_path / "__data__Noisy")
+# configs = ml_confs.from_file(main_path / "configs.yaml")
 
 # print(noisy_data_path)
-def make_indices():
+def make_indices(configs):
     """
     Make indices for the noisy dataset
     
@@ -24,7 +23,7 @@ def make_indices():
 
     indices = {"train":[], "test":[]}
     for split in ["train", "test"]:
-        ind = 0  
+        ind = 0  # random.randint(0, 9)
         for i in range(configs[f"{split}_samples"]):
             if random.random() > 1 - configs.eta: # Add noise
                 next_digit = random.randint(1,9) # Add a random digit. It means that the index of next digit must be different the previous index + 1
@@ -37,7 +36,7 @@ def make_indices():
                 ind += 1
     return indices
             
-def make_noisy_dataset():
+def make_noisy_dataset(configs, data_path, noisy_data_path):
     """
     Make the noisy dataset and save it to disk
     
@@ -53,7 +52,7 @@ def make_noisy_dataset():
 
     ordered_MNIST = DatasetDict()
     Noisy_ordered_MNIST = DatasetDict()
-    indices = make_indices()
+    indices = make_indices(configs)
     # Order the digits in the dataset and select only a subset of the data
     for split in ["train", "test"]:
         ordered_MNIST[split] = interleave_datasets([ds[split] for ds in digit_ds], split=split, seed=configs.rng_seed)  
@@ -90,15 +89,14 @@ def make_noisy_dataset():
 
 
 
-def main():
+def main(configs):
     main_path = Path(__file__).parent
     data_path = main_path / "__data__"
     noisy_data_path = main_path / "__data__Noisy"
-    configs = ml_confs.from_file(main_path / "configs.yaml")
     # Check if data_path exists, if not preprocess the data
     if not data_path.exists():
         print("Data directory not found, preprocessing data.")
-        make_noisy_dataset()
+        make_noisy_dataset(configs, data_path, noisy_data_path)
     else:
         # # Try to load the configs.yaml file and compare with the current one, if different, wipe the data_path and preprocess the data
         # _saved_configs = ml_confs.from_file(data_path / "configs.yaml")
@@ -111,7 +109,7 @@ def main():
         #     # Delete the data_path and preprocess the data
         shutil.rmtree(data_path)
         shutil.rmtree(noisy_data_path)
-        make_noisy_dataset()
+        make_noisy_dataset(configs, data_path, noisy_data_path)
             
         # else:
         #     print("Data already preprocessed.")
