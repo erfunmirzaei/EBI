@@ -42,7 +42,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
 
     """
     train_data = traj_to_contexts(train_dataset['image'], backend='numpy')
-
+    n = train_data.shape[0]  
     # We will now fit the transfer operator models. We will use the following models:
     transfer_operator_models = {}
 

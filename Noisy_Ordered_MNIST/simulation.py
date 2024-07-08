@@ -14,15 +14,15 @@ import data_pipeline
 import ml_confs
 from datasets import load_from_disk
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import random
-import os
+# import os
 import torch
 from torch.utils.data import DataLoader
 import lightning
 # import logging
 from kooplearn.data import traj_to_contexts
-from sklearn.gaussian_process.kernels import RBF
+# from sklearn.gaussian_process.kernels import RBF
 from tqdm import tqdm
 from utils import plot_noisy_ordered_MNIST, plot_oracle_metrics, plot_image_forecast, plot_TNSE, create_figure
 from transfer_op import fit_transfer_operator_models
