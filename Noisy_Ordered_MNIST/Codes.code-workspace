@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Codes",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"githubPullRequests.ignoredPullRequestBranches": [
+			"main"
+		]
+	}
+}
