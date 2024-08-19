@@ -1,7 +1,18 @@
+import importlib
+import subprocess
+import sys
+for module in ['kooplearn', 'datasets', 'matplotlib', 'ml-confs']: # !! Add here any additional module that you need to install on top of kooplearn
+    try:
+        importlib.import_module(module)
+    except ImportError:
+        if module == 'kooplearn':
+            module = 'kooplearn[full]'
+        # pip install -q {module}
+        subprocess.check_call([sys.executable, "-m", "pip", "install", module])
 import shutil
 from pathlib import Path
 import random
-from datasets import DatasetDict, interleave_datasets, load_dataset, Dataset
+from datasets import DatasetDict, interleave_datasets, load_dataset
 
 # main_path = Path(__file__).parent
 # data_path = str(main_path / "__data__")
@@ -86,8 +97,6 @@ def make_noisy_dataset(configs, data_path, noisy_data_path):
 
     ordered_MNIST.save_to_disk(data_path)
     # configs.to_file(str(data_path / "configs.yaml"))
-
-
 
 def main(configs):
     main_path = Path(__file__).parent
