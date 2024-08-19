@@ -243,6 +243,7 @@ def plot_accuracy_ordered_vs_time(ax, report, configs):
     ax.grid(True)
     ax.legend(fontsize=10)
 
+# TODO: Make the figure creation function name better
 # Function to create the full figure with the required subplots
 def create_figure(transfer_operator_models, biased_cov_ests, unbiased_cov_ests, Ns, report, configs):
     fig = plt.figure(figsize=(9.75, 4.5))  # Width: 14 inches, Height: 5 inches

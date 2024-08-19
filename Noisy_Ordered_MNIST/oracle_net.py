@@ -17,7 +17,7 @@ import random
 import torch.nn as nn
 import lightning
 from typing import Optional, NamedTuple
-from kooplearn import TrainableFeatureMap
+from kooplearn.abc import TrainableFeatureMap
 import logging
 from utils import Metrics
 
@@ -62,6 +62,17 @@ class CNNEncoder(nn.Module):
         X = X.view(X.size(0), -1)
         output = self.out(X)
         return output
+    
+    def encode(self, X):
+        if X.dim() == 3:
+            X = X.unsqueeze(1)  # Add a channel dimension if needed
+        X = self.conv1(X)
+        X = self.conv2(X)
+        # Flatten the output of conv2
+        X = X.view(X.size(0), -1)
+        output = self.out(X)
+        
+        return output
 
 # Following kooplearn implementations, we define a Pytorch Lightning module and then wrap it in a TrainableFeatureMap
 class ClassifierModule(lightning.LightningModule):
@@ -69,6 +80,7 @@ class ClassifierModule(lightning.LightningModule):
         super().__init__()
         self.num_classes = num_classes
         self.encoder = CNNEncoder(num_classes=num_classes)
+
         self.learning_rate = learning_rate
         self.loss_fn = torch.nn.CrossEntropyLoss()
 
@@ -82,6 +94,9 @@ class ClassifierModule(lightning.LightningModule):
     def training_step(self, batch, batch_idx):
         images, labels = batch['image'], batch['label']
         output = self.encoder(images)
+        # TODO: Check if the following line is better than the above line
+        # output = self.encoder.encode(images)
+
         loss = self.loss_fn(output, labels)
         with torch.no_grad():
             pred_labels = output.argmax(dim=1)

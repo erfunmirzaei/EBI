@@ -5,7 +5,7 @@ import pytorch_lightning as lightning
 from torch.utils.data import DataLoader
 from sklearn.gaussian_process.kernels import RBF
 from kooplearn.abc import TrainableFeatureMap, BaseModel
-from Noisy_Ordered_MNIST.oracle_net import ClassifierFeatureMap, CNNEncoder, evaluate_model, Metrics
+from oracle_net import ClassifierFeatureMap, CNNEncoder, Metrics
 from kooplearn.models import Linear, Nonlinear, Kernel
 from kooplearn.models.feature_maps.nn import NNFeatureMap
 from kooplearn.nn.data import collate_context_dataset

@@ -17,6 +17,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 import random
 # import os
+from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 import lightning
@@ -26,11 +27,15 @@ from kooplearn.data import traj_to_contexts
 from tqdm import tqdm
 from utils import plot_noisy_ordered_MNIST, plot_oracle_metrics, plot_image_forecast, plot_TNSE, create_figure
 from transfer_op import fit_transfer_operator_models
-from oracle_net import ClassifierFeatureMap, CNNEncoder, evaluate_model, Metrics
+from oracle_net import ClassifierFeatureMap
 from normalized_corr_est_cov_est import biased_covariance_estimator, unbiased_covariance_estimator
 
+
 # Load configs
-configs = ml_confs.from_file('configs.yaml') 
+main_path = Path(__file__).parent
+data_path = str(main_path / "__data__")
+noisy_data_path = str(main_path / "__data__Noisy")
+configs = ml_confs.from_file(main_path / "configs.yaml")
 device = 'gpu' if torch.cuda.is_available() else 'cpu'
 
 # Set the seed
@@ -39,7 +44,7 @@ np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
 
 # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
-Ns = np.arange(500, len(configs.train_samples), 500)
+Ns = np.arange(500, configs.train_samples, 500)
 n_0 = len(Ns)
 delta = configs.delta
 # tau = 25
