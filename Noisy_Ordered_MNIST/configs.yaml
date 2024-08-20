@@ -10,7 +10,6 @@ val_ratio: 0.2
 eval_up_to_t: 15
 n_repits: 10
 delta: 0.05
-data_path: ''
 
 # Model parameters
 reduced_rank: True
@@ -19,6 +18,7 @@ dpnet_lr: 0.0009
 dpnet_metric_deformation: 1
 dpnet_center_covariances: False
 dpnet_relaxed: False
+dpnet_batch_size: 64
 
 # Oracle parameters
 conv1_out_channels: 16

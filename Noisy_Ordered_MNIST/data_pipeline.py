@@ -98,30 +98,30 @@ def make_noisy_dataset(configs, data_path, noisy_data_path):
     ordered_MNIST.save_to_disk(data_path)
     # configs.to_file(str(data_path / "configs.yaml"))
 
-def main(configs):
-    main_path = Path(__file__).parent
-    data_path = main_path / "__data__"
-    noisy_data_path = main_path / "__data__Noisy"
-    # Check if data_path exists, if not preprocess the data
-    if not data_path.exists():
-        print("Data directory not found, preprocessing data.")
-        make_noisy_dataset(configs, data_path, noisy_data_path)
-    else:
-        # # Try to load the configs.yaml file and compare with the current one, if different, wipe the data_path and preprocess the data
-        # _saved_configs = ml_confs.from_file(data_path / "configs.yaml")
-        # configs_changed = False
-        # for attr in ["train_samples", "test_samples", "classes", "val_ratio"]:
-        #     if _saved_configs[attr] != configs[attr]:
-        #         configs_changed = True
-        # if configs_changed:
-        #     print("Configs changed, preprocessing data.")
-        #     # Delete the data_path and preprocess the data
-        shutil.rmtree(data_path)
-        shutil.rmtree(noisy_data_path)
-        make_noisy_dataset(configs, data_path, noisy_data_path)
+def main(configs, data_path, noisy_data_path):
+    shutil.rmtree(data_path)
+    shutil.rmtree(noisy_data_path)
+    make_noisy_dataset(configs, data_path, noisy_data_path)
+    # # Check if data_path exists, if not preprocess the data
+    # if not data_path.exists():
+    #     print("Data directory not found, preprocessing data.")
+    #     make_noisy_dataset(configs, data_path, noisy_data_path)
+    # else:
+    #     # # Try to load the configs.yaml file and compare with the current one, if different, wipe the data_path and preprocess the data
+    #     # _saved_configs = ml_confs.from_file(data_path / "configs.yaml")
+    #     # configs_changed = False
+    #     # for attr in ["train_samples", "test_samples", "classes", "val_ratio"]:
+    #     #     if _saved_configs[attr] != configs[attr]:
+    #     #         configs_changed = True
+    #     # if configs_changed:
+    #     #     print("Configs changed, preprocessing data.")
+    #     #     # Delete the data_path and preprocess the data
+    #     shutil.rmtree(data_path)
+    #     shutil.rmtree(noisy_data_path)
+    #     make_noisy_dataset(configs, data_path, noisy_data_path)
             
-        # else:
-        #     print("Data already preprocessed.")
+    #     # else:
+    #     #     print("Data already preprocessed.")
 
 
 if __name__ == "__main__":

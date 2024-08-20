@@ -62,7 +62,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
 
     # - Nonlinear(DPNets encoder) reduced-rank regression model
 
-    train_dl = DataLoader(train_data, batch_size = configs.batch_size, shuffle=True, collate_fn=collate_context_dataset)
+    train_dl = DataLoader(train_data, batch_size = configs.dpnet_batch_size, shuffle=True, collate_fn=collate_context_dataset)
     trainer_kwargs = {
         'accelerator': device,
         'devices': 1,
@@ -95,7 +95,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
             fdict['loss_fn'],
             torch.optim.Adam,
             trainer,
-            encoder_kwargs={'num_classes': configs.classes},
+            encoder_kwargs={'num_classes': configs.classes, 'configs':configs},
             loss_kwargs=fdict['loss_kwargs'],
             optimizer_kwargs={'lr': configs.dpnet_lr},
             seed=configs.rng_seed

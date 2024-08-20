@@ -59,14 +59,19 @@ unbiased_cov_ests = {
                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
                    'Classifier_Baseline':np.empty((n_0, configs.n_repits)),
                    'DPNets':np.empty((n_0, configs.n_repits))}
+reports = {
+                    # 'Linear' : np.empty((n_0, configs.n_repits)),
+                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
+                    'Classifier_Baseline':np.empty((n_0, configs.n_repits)),
+                    'DPNets':np.empty((n_0, configs.n_repits))}
 
-lower_bound = np.empty((n_0, configs.n_repits))
+# lower_bound = np.empty((n_0, configs.n_repits))
 
 for i in range(configs.n_repits):
     # Load the dataset
-    data_pipeline.main(configs) # Run data download and preprocessing
-    ordered_MNIST = load_from_disk('__data__') # Load dataset (torch)
-    Noisy_ordered_MNIST = load_from_disk('__data__Noisy') # Load dataset (torch)
+    data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
+    ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
+    Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
     
     for j in tqdm(range(len(Ns))):
         n = Ns[j]
@@ -77,7 +82,7 @@ for i in range(configs.n_repits):
                 break
         tau = min_tau
 
-        oracle_train_dl = DataLoader(ordered_MNIST['train'].select(range(n)), batch_size=configs.batch_size, shuffle=True)
+        oracle_train_dl = DataLoader(ordered_MNIST['train'].select(range(n)), batch_size=configs.oracle_batch_size, shuffle=True)
         oracle_val_dl = DataLoader(ordered_MNIST['validation'].select(range(int(n*configs.val_ratio))), batch_size=len(ordered_MNIST['validation']), shuffle=True)
 
         trainer_kwargs = {
@@ -91,6 +96,7 @@ for i in range(configs.n_repits):
         trainer = lightning.Trainer(**trainer_kwargs)
 
         oracle = ClassifierFeatureMap(
+            configs,
             configs.classes,
             configs.oracle_lr,
             trainer,
@@ -98,8 +104,6 @@ for i in range(configs.n_repits):
         )
 
         oracle.fit(train_dataloaders=oracle_train_dl, val_dataloaders=oracle_val_dl)
-
-
         print(oracle.lightning_module.metrics.val_acc[-1])
 
         new_train_dataset = Noisy_ordered_MNIST['train'].select(list(range(n)))
@@ -109,25 +113,17 @@ for i in range(configs.n_repits):
         test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
         test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
 
-        transfer_operator_models, report, C_H, B_H, kernel_matrices= fit_transfer_operator_models(new_train_dataset, oracle, test_data, configs, device)
+        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, configs, device)
 
+        reports[j][i] = report
         for model_name in transfer_operator_models:
-            # print(kernel_matrices[model_name].shape[0], tau)
             biased_cov_ests[model_name][j][i] = biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
             unbiased_cov_ests[model_name][j][i] = unbiased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
+        
+        # lower_bound[j][i] = 1 / tau
 
-        lower_bound[j][i] = 1 / tau
-
+np.save(main_path + f'results/reports_eta_{configs.eta}.npy', reports)
 for i, model_name in enumerate(transfer_operator_models):
     model_name = model_name.replace(" ", "")
-    np.save(configs.data_path + f'biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
-    np.save(configs.data_path + f'/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])
-
-# Assuming the required data structures are available
-create_figure(transfer_operator_models, biased_cov_ests, unbiased_cov_ests, Ns, delta, report, configs)
-
-# Plot the image forecast for the first 16 examples in the test set
-plot_image_forecast(Noisy_ordered_MNIST, report, configs, test_seed_idx=0)
-
-# Plot the t-SNE of the feature functions for all the transfer operator models in the report dictionary
-plot_TNSE(report, configs, test_data, test_labels, transfer_operator_models)
+    np.save(main_path + f'results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
+    np.save(main_path + f'results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])

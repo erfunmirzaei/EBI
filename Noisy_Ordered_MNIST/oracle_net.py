@@ -76,10 +76,11 @@ class CNNEncoder(nn.Module):
 
 # Following kooplearn implementations, we define a Pytorch Lightning module and then wrap it in a TrainableFeatureMap
 class ClassifierModule(lightning.LightningModule):
-    def __init__(self, num_classes: int, learning_rate: float):
+    def __init__(self, num_classes: int, learning_rate: float, configs):
         super().__init__()
         self.num_classes = num_classes
-        self.encoder = CNNEncoder(num_classes=num_classes)
+        self.configs = configs
+        self.encoder = CNNEncoder(num_classes=num_classes, configs= self.configs)
 
         self.learning_rate = learning_rate
         self.loss_fn = torch.nn.CrossEntropyLoss()
@@ -122,15 +123,18 @@ class ClassifierModule(lightning.LightningModule):
 class ClassifierFeatureMap(TrainableFeatureMap):
     def __init__(
                 self,
+                configs,
                 num_classes: int,
                 learning_rate: float,
                 trainer: lightning.Trainer,
                 seed: Optional[int] = None
                 ):
+        
+        self.configs = configs
         #Set rng seed
         lightning.seed_everything(seed)
         self.seed = seed
-        self.lightning_module = ClassifierModule(num_classes, learning_rate)
+        self.lightning_module = ClassifierModule(num_classes, learning_rate, configs)
 
         #Init trainer
         self.lightning_trainer = trainer
