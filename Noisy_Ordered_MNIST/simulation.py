@@ -14,18 +14,13 @@ import data_pipeline
 import ml_confs
 from datasets import load_from_disk
 import numpy as np
-# import matplotlib.pyplot as plt
 import random
-# import os
 from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 import lightning
-# import logging
 from kooplearn.data import traj_to_contexts
-# from sklearn.gaussian_process.kernels import RBF
 from tqdm import tqdm
-from utils import plot_noisy_ordered_MNIST, plot_oracle_metrics, plot_image_forecast, plot_TNSE, create_figure
 from transfer_op import fit_transfer_operator_models
 from oracle_net import ClassifierFeatureMap
 from normalized_corr_est_cov_est import biased_covariance_estimator, unbiased_covariance_estimator
@@ -43,11 +38,9 @@ random.seed(configs.rng_seed)
 np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
 
-# Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
-Ns = np.arange(500, configs.train_samples, 500)
+Ns = np.arange(500, configs.train_samples, 500) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
 delta = configs.delta
-# tau = 25
 biased_cov_ests = {
                     # 'Linear' : np.empty((n_0, configs.n_repits)),
                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
@@ -72,15 +65,24 @@ for i in range(configs.n_repits):
     data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
+
+    # Check if the dataset is different from the previous one
+    if i > 0:
+        for key in ordered_MNIST:
+            if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
+                print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
+                break
+
+    ordered_MNIST_prev = ordered_MNIST
     
     for j in tqdm(range(len(Ns))):
         n = Ns[j]
-
+        
         for tau in range(1,n):
             if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 :
                 min_tau = tau
                 break
-        tau = min_tau
+        tau = min_tau # tau = 25
 
         oracle_train_dl = DataLoader(ordered_MNIST['train'].select(range(n)), batch_size=configs.oracle_batch_size, shuffle=True)
         oracle_val_dl = DataLoader(ordered_MNIST['validation'].select(range(int(n*configs.val_ratio))), batch_size=len(ordered_MNIST['validation']), shuffle=True)

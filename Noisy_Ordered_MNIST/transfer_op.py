@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import pytorch_lightning as lightning
+import lightning
 from torch.utils.data import DataLoader
 from sklearn.gaussian_process.kernels import RBF
 from kooplearn.abc import TrainableFeatureMap, BaseModel
@@ -109,7 +109,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
     report = {}
     for model_name, model in transfer_operator_models.items():
             print(f"Evaluating {model_name.replace('_', ' ')}")
-            report[model_name] = evaluate_model(model, test_data)
+            report[model_name] = evaluate_model(model, test_data) #TODO: Correct the arguments
     
     C_H = {'Gaussian_RRR':0.0,
         #    'Linear':0.0,
