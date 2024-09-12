@@ -36,13 +36,13 @@ def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatu
     return report
 
 
-def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, test_data: np.ndarray, configs, device: torch.device):
+def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, test_data: np.ndarray, configs, device: torch.device, test_labels: np.ndarray):
     """
     Fit the transfer operator models
 
     """
     train_data = traj_to_contexts(train_dataset['image'], backend='numpy')
-    n = train_data.shape[0]  
+    n = train_dataset.shape[0]  
     # We will now fit the transfer operator models. We will use the following models:
     transfer_operator_models = {}
 
@@ -109,7 +109,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
     report = {}
     for model_name, model in transfer_operator_models.items():
             print(f"Evaluating {model_name.replace('_', ' ')}")
-            report[model_name] = evaluate_model(model, test_data) #TODO: Correct the arguments
+            report[model_name] = evaluate_model(model, test_data, configs, oracle, test_labels)
     
     C_H = {'Gaussian_RRR':0.0,
         #    'Linear':0.0,

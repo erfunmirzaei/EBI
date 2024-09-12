@@ -38,7 +38,7 @@ random.seed(configs.rng_seed)
 np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
 
-Ns = np.arange(500, configs.train_samples, 500) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+Ns = np.arange(400, configs.train_samples, 400) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
 delta = configs.delta
 biased_cov_ests = {
@@ -52,11 +52,11 @@ unbiased_cov_ests = {
                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
                    'Classifier_Baseline':np.empty((n_0, configs.n_repits)),
                    'DPNets':np.empty((n_0, configs.n_repits))}
-reports = {
+ordered_acc = {
                     # 'Linear' : np.empty((n_0, configs.n_repits)),
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits)),
-                    'DPNets':np.empty((n_0, configs.n_repits))}
+                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.eval_up_to_t)),
+                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.eval_up_to_t)),
+                    'DPNets':np.empty((n_0, configs.n_repits, configs.eval_up_to_t))}
 
 # lower_bound = np.empty((n_0, configs.n_repits))
 
@@ -66,18 +66,18 @@ for i in range(configs.n_repits):
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
 
-    # Check if the dataset is different from the previous one
-    if i > 0:
-        for key in ordered_MNIST:
-            if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
-                print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
-                break
+    # # Check if the dataset is different from the previous one
+    # if i > 0:
+    #     for key in ordered_MNIST:
+    #         if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
+    #             print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
+    #             break
 
-    ordered_MNIST_prev = ordered_MNIST
+    # ordered_MNIST_prev = ordered_MNIST
     
     for j in tqdm(range(len(Ns))):
         n = Ns[j]
-        
+
         for tau in range(1,n):
             if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 :
                 min_tau = tau
@@ -115,17 +115,17 @@ for i in range(configs.n_repits):
         test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
         test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
 
-        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, configs, device)
+        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, configs, device, test_labels)
 
-        reports[j][i] = report
         for model_name in transfer_operator_models:
             biased_cov_ests[model_name][j][i] = biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
             unbiased_cov_ests[model_name][j][i] = unbiased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
+            ordered_acc[model_name][j][i] = report[model_name]['accuracy_ordered']
         
         # lower_bound[j][i] = 1 / tau
 
-np.save(main_path + f'results/reports_eta_{configs.eta}.npy', reports)
 for i, model_name in enumerate(transfer_operator_models):
     model_name = model_name.replace(" ", "")
     np.save(main_path + f'results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
     np.save(main_path + f'results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])
+    np.save(main_path + f'results/reports_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  
