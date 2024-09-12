@@ -99,8 +99,12 @@ def make_noisy_dataset(configs, data_path, noisy_data_path):
     # configs.to_file(str(data_path / "configs.yaml"))
 
 def main(configs, data_path, noisy_data_path):
-    shutil.rmtree(data_path)
-    shutil.rmtree(noisy_data_path)
+    if  data_path.exists():
+        shutil.rmtree(data_path)
+        shutil.rmtree(noisy_data_path)
+
+    data_path = str(data_path)
+    noisy_data_path = str(noisy_data_path)
     make_noisy_dataset(configs, data_path, noisy_data_path)
     # # Check if data_path exists, if not preprocess the data
     # if not data_path.exists():

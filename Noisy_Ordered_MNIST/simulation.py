@@ -28,8 +28,8 @@ from normalized_corr_est_cov_est import biased_covariance_estimator, unbiased_co
 
 # Load configs
 main_path = Path(__file__).parent
-data_path = str(main_path / "__data__")
-noisy_data_path = str(main_path / "__data__Noisy")
+data_path = main_path / "__data__"
+noisy_data_path = main_path / "__data__Noisy"
 configs = ml_confs.from_file(main_path / "configs.yaml")
 device = 'gpu' if torch.cuda.is_available() else 'cpu'
 
@@ -124,8 +124,9 @@ for i in range(configs.n_repits):
         
         # lower_bound[j][i] = 1 / tau
 
+Path("results").mkdir(parents=True, exist_ok=True)
 for i, model_name in enumerate(transfer_operator_models):
     model_name = model_name.replace(" ", "")
-    np.save(main_path + f'results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
-    np.save(main_path + f'results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])
-    np.save(main_path + f'results/reports_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  
+    np.save(str(main_path) + f'/results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
+    np.save(str(main_path) + f'/results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])
+    np.save(str(main_path) + f'/results/reports_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  

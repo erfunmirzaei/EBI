@@ -8,7 +8,7 @@ val_ratio: 0.2
 
 # experiment parameters
 eval_up_to_t: 15
-n_repits: 10
+n_repits: 2
 delta: 0.05
 
 # Model parameters
