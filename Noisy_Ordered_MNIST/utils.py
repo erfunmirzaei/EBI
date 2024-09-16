@@ -216,10 +216,10 @@ def plot_unbiased_estimates(ax, models_name, unbiased_cov_ests, Ns):
     ax.grid(True)
 
 # Third figure in the first row
-def plot_accuracy_ordered_vs_time(ax, models_name, ordered_acc, n_train, configs):
+def plot_accuracy_ordered_vs_time(ax, models_name, ordered_acc, configs):
     for model_name in models_name:
-        acc_ordered_mean = np.mean(ordered_acc[model_name][n_train], axis=0)
-        acc_ordered_std = np.std(ordered_acc[model_name][n_train], axis=0)
+        acc_ordered_mean = np.mean(ordered_acc[model_name][configs.n_train_acc_plot], axis=0)
+        acc_ordered_std = np.std(ordered_acc[model_name][configs.n_train_acc_plot], axis=0)
         ax.plot(np.arange(configs.eval_up_to_t), acc_ordered_mean, label=model_name.replace('_', ' '))
         ax.fill_between(np.arange(configs.eval_up_to_t), acc_ordered_mean - acc_ordered_std, acc_ordered_mean + acc_ordered_std, alpha=0.2)
 
@@ -233,9 +233,8 @@ def plot_accuracy_ordered_vs_time(ax, models_name, ordered_acc, n_train, configs
     ax.grid(True)
     ax.legend(fontsize=10)
 
-
 # Function to create the full figure with the required subplots
-def Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_acc, Ns, n_train_plot, configs):
+def Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_acc, Ns, configs):
     fig = plt.figure(figsize=(9.75, 4.5))  # Width: 14 inches, Height: 5 inches
 
     # First row of subplots
@@ -248,7 +247,7 @@ def Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_a
     plot_unbiased_estimates(ax2, models_name, unbiased_cov_ests, Ns)
 
     ax3 = fig.add_subplot(gs1[0, 2])
-    plot_accuracy_ordered_vs_time(ax3, models_name, ordered_acc, n_train_plot,configs)
+    plot_accuracy_ordered_vs_time(ax3, models_name, ordered_acc, configs)
 
     plt.savefig(str(main_path) + f'/results/first_figure_eta_{configs.eta}.pdf', dpi = 600, bbox_inches='tight', pad_inches=0.1)
     plt.show()

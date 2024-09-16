@@ -37,10 +37,11 @@ device = 'gpu' if torch.cuda.is_available() else 'cpu'
 random.seed(configs.rng_seed)
 np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
-
+#TODO: Handle the following line better(Add some hyperparameters to the configs.yaml file)
 Ns = np.arange(400, configs.train_samples, 400) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
 delta = configs.delta
+
 biased_cov_ests = {
                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
                    'Classifier_Baseline':np.empty((n_0, configs.n_repits)),
@@ -66,9 +67,9 @@ pred_images = {
                     'DPNets':np.empty((n_0, configs.n_repits, configs.eval_up_to_t, configs.oracle_input_size1, configs.oracle_input_size2))}
 
 true_labels = {
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples))}
+                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples - 1))}
 
 true_images = {
                     'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.oracle_input_size1, configs.oracle_input_size2)),
@@ -76,13 +77,13 @@ true_images = {
                     'DPNets':np.empty((n_0, configs.n_repits, configs.oracle_input_size1, configs.oracle_input_size2))}
 
 fn_i = {
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples))}
+                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples - 1))}
 fn_j = {
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples)),
-                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples))}
+                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
+                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples - 1))}
 
 # lower_bound = np.empty((n_0, configs.n_repits))
 
@@ -91,15 +92,15 @@ for i in range(configs.n_repits):
     data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
-    #TODO: Remove the following line
-    # Check if the dataset is different from the previous one
-    if i > 0:
-        for key in ordered_MNIST:
-            if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
-                print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
-                break
+    # #TODO: Remove the following line
+    # # Check if the dataset is different from the previous one
+    # if i > 0:
+    #     for key in ordered_MNIST:
+    #         if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
+    #             print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
+    #             break
 
-    ordered_MNIST_prev = ordered_MNIST
+    # ordered_MNIST_prev = ordered_MNIST
     
     for j in tqdm(range(len(Ns))):
         n = Ns[j]
@@ -123,13 +124,7 @@ for i in range(configs.n_repits):
 
         trainer = lightning.Trainer(**trainer_kwargs)
 
-        oracle = ClassifierFeatureMap(
-            configs,
-            configs.classes,
-            configs.oracle_lr,
-            trainer,
-            seed=configs.rng_seed
-        )
+        oracle = ClassifierFeatureMap(configs,configs.classes,configs.oracle_lr,trainer,seed=configs.rng_seed)
 
         oracle.fit(train_dataloaders=oracle_train_dl, val_dataloaders=oracle_val_dl)
         print(oracle.lightning_module.metrics.val_acc[-1])
@@ -150,9 +145,10 @@ for i in range(configs.n_repits):
             pred_labels[model_name][j][i] = report[model_name]['label']
             true_labels[model_name][j][i] = test_labels
             pred_images[model_name][j][i] = report[model_name]['image']
-            true_images[model_name][j][i] = test_data[configs.test_seed_idx]
+            true_images[model_name][j][i] = Noisy_ordered_MNIST['test']['image'][configs.test_seed_idx]
             fn_i[model_name][j][i] = report[model_name]['fn_i']
             fn_j[model_name][j][i] = report[model_name]['fn_j']        
+
         # lower_bound[j][i] = 1 / tau
 
 Path("results").mkdir(parents=True, exist_ok=True)
@@ -160,7 +156,7 @@ for i, model_name in enumerate(transfer_operator_models):
     model_name = model_name.replace(" ", "")
     np.save(str(main_path) + f'/results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
     np.save(str(main_path) + f'/results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy', unbiased_cov_ests[model_name])
-    np.save(str(main_path) + f'/results/reports_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  
+    np.save(str(main_path) + f'/results/ordered_acc_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  
     np.save(str(main_path) + f'/results/pred_labels_{model_name}_eta_{configs.eta}.npy', pred_labels[model_name])
     np.save(str(main_path) + f'/results/pred_images_{model_name}_eta_{configs.eta}.npy', pred_images[model_name])
     np.save(str(main_path) + f'/results/true_labels_{model_name}_eta_{configs.eta}.npy', true_labels[model_name])

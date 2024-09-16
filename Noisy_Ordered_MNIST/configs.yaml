@@ -9,7 +9,7 @@ val_ratio: 0.2
 # experiment parameters
 eval_up_to_t: 15
 test_seed_idx: 0
-n_train_acc_plot: 100
+n_train_acc_plot: 0
 n_rep_plot: 0
 n_repits: 2
 delta: 0.05

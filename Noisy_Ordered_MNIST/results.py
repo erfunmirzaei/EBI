@@ -24,10 +24,11 @@ unbiased_cov_ests = {}
 ordered_acc = {}
 pred_labels = {}
 pred_images = {}
+true_labels = {}
+true_images = {}
 fn_i = {}
 fn_j = {}
 Ns = np.arange(400, configs.train_samples, 400) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
-n_train_plot = configs.n_train_acc_plot
 delta = configs.delta
 models_name = ['Gaussian_RRR',"DPNets", "Classifier_Baseline"]
 
@@ -38,16 +39,19 @@ for i, model_name in enumerate(models_name):
     ordered_acc[model_name] = np.load(str(main_path) + f'/results/reports_{model_name}_eta_{configs.eta}.npy')
     pred_labels[model_name] = np.load(str(main_path) + f'/results/pred_labels_{model_name}_eta_{configs.eta}.npy')
     pred_images[model_name] = np.load(str(main_path) + f'/results/pred_images_{model_name}_eta_{configs.eta}.npy')
-    true_labels = np.load(str(main_path) + f'/results/true_labels_{model_name}_eta_{configs.eta}.npy')
-    true_images = np.load(str(main_path) + f'/results/true_images_{model_name}_eta_{configs.eta}.npy')
+    true_labels[model_name] = np.load(str(main_path) + f'/results/true_labels_{model_name}_eta_{configs.eta}.npy')
+    true_images[model_name] = np.load(str(main_path) + f'/results/true_images_{model_name}_eta_{configs.eta}.npy')
     fn_i[model_name] = np.load(str(main_path) + f'/results/fn_i_{model_name}_eta_{configs.eta}.npy')
     fn_j[model_name] = np.load(str(main_path) + f'/results/fn_j_{model_name}_eta_{configs.eta}.npy')
 
 # Plot the results
-Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_acc, Ns, delta, n_train_plot, configs)
+print("Plotting the results...")
+Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_acc, Ns, configs)
 
 # Plot the image forecast for the first 16 examples in the test set
+print("Plotting the image forecast...")
 plot_image_forecast(true_labels, true_images, models_name, pred_labels, pred_images, configs)
 
 # Plot the t-SNE of the feature functions for all the transfer operator models in the report dictionary
+print("Plotting the t-SNE of the feature functions...")
 plot_TNSE(models_name, fn_i, fn_j, configs, true_labels)
