@@ -8,6 +8,9 @@ val_ratio: 0.2
 
 # experiment parameters
 eval_up_to_t: 15
+test_seed_idx: 0
+n_train_acc_plot: 100
+n_rep_plot: 0
 n_repits: 2
 delta: 0.05
 
@@ -21,6 +24,8 @@ dpnet_relaxed: False
 dpnet_batch_size: 64
 
 # Oracle parameters
+oracle_input_size1: 28
+oracle_input_size2: 28
 conv1_out_channels: 16
 conv1_kernel_size: 5
 conv1_stride: 1

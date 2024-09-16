@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import NamedTuple
-from sklearn.manifold import TSNE
+
+from pathlib import Path
+
+main_path = Path(__file__).parent
 
 class Metrics(NamedTuple):
     train_acc: list[float]
@@ -35,28 +38,27 @@ def plot_oracle_metrics(metrics: Metrics):
     ax.margins(x=0)
     plt.show()
 
-def plot_image_forecast(Noisy_ordered_MNIST: dict, report: dict, configs, test_seed_idx: int = 0):
-    num_models = len(report.keys())
+def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels: dict, pred_images: dict, configs):
+    num_models = len(models_name)
     num_cols = configs.eval_up_to_t + 1
     fig, axes = plt.subplots(num_models, num_cols, figsize=(9.75, 3), sharex=True, sharey=True)
 
     # Remove margins between columns
     plt.subplots_adjust(wspace=0)
 
-    for model_idx, model_name in enumerate(report.keys()):
+    for model_idx, model_name in enumerate(models_name):
         ax = axes[model_idx, 0]
-        ax.imshow(np.squeeze(Noisy_ordered_MNIST['test']['image'][test_seed_idx]), cmap='gray')
+        ax.imshow(np.squeeze(true_images[model_name][configs.n_train_acc_plot][configs.n_rep_plot]), cmap='gray')
         # Remove axes and ticks
         ax.set_xticks([])
         ax.set_yticks([])
         ax.axis('off')
-        model_eval = report[model_name]
 
         for t_idx in range(num_cols - 1):
-            pred_label = model_eval['label'][t_idx][test_seed_idx]
-            true_label = (Noisy_ordered_MNIST['test']['label'][test_seed_idx] + model_eval['times'][t_idx])%configs.classes
+            pred_label = pred_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][t_idx]
+            true_label = (true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][configs.test_seed_idx] + t_idx + 1)%configs.classes
             # true_label = test_labels[test_seed_idx + t_idx + 1]
-            img = np.squeeze(model_eval['image'][t_idx][test_seed_idx])
+            img = np.squeeze(pred_images[model_name][configs.n_train_acc_plot][configs.n_rep_plot][t_idx])
 
             # Set subplot for the current class
             ax = axes[model_idx, t_idx + 1]
@@ -86,48 +88,34 @@ def plot_image_forecast(Noisy_ordered_MNIST: dict, report: dict, configs, test_s
             # inset_ax.set_facecolor('white')
 
     # Display the model names on the left of each row
-    for model_idx, model_name in enumerate(report.keys()):
+    for model_idx, model_name in enumerate(models_name):
         axes[model_idx, 0].text(-0.1, 0.5, model_name.replace('_', ' '), fontsize=14, ha='right', va='center', transform=axes[model_idx, 0].transAxes)
 
     for class_idx in range(num_cols):
-        title = (Noisy_ordered_MNIST['test']['label'][test_seed_idx] + class_idx)%configs.classes
+        title = (true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][configs.test_seed_idx]  + class_idx)%configs.classes
         if class_idx == 0:
             axes[0, class_idx].set_title(f"Seed: {title}", fontsize=14)
         else:
             axes[0, class_idx].set_title(f"{title}", fontsize=14)
 
-    # TODO: Use data_path from configs
-    # data_path = "/content/drive/MyDrive/Noisy_ordered_MNIST"
-    plt.savefig(configs.data_path + f'/second_figure_eta_{configs.eta}.pdf', dpi = 600, bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(str(main_path) + f'/results/second_figure_eta_{configs.eta}.pdf', dpi = 600, bbox_inches='tight', pad_inches=0.1)
     plt.show()
 
-def plot_TNSE(report: dict, configs, test_data, test_labels, transfer_operator_models): 
+def plot_TNSE(models_name:list, fn_i, fn_j, configs,  true_labels): 
     """Plot the t-SNE of the feature functions for all the transfer operator models in the report dictionary"""
     # Define the dimensionality reduction method
-    DimReduction = TSNE
-    n_models = len(report.keys())
+    n_models = len(models_name)
     num_rows = 1
     num_cols = n_models
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(3.25*3, 3.25))
     axes = axes.flatten()
 
-    for model_idx, (ax, (model_name, report_data)) in enumerate(zip(axes, report.items())):
+    for model_idx, (ax, model_name) in enumerate(zip(axes, models_name)):
         ax.set_title(model_name.replace('_', ' '), fontsize=14)  # Adjust title font size
-        fitted_model = transfer_operator_models[model_name]
-        vals, lfuncs, rfuncs = fitted_model.eig(eval_right_on=test_data, eval_left_on=test_data)
+        fni = fn_i[model_name][configs.n_train_acc_plot][configs.n_rep_plot]
+        fnj = fn_j[model_name][configs.n_train_acc_plot][configs.n_rep_plot]
 
-        # returns the unique values and the index of the first occurrence of a value
-        unique_vals, idx_start = np.unique(np.abs(vals), return_index=True)
-
-        vals, lfuncs, rfuncs = vals[idx_start], lfuncs[:, idx_start], rfuncs[:, idx_start]
-
-        fns = lfuncs
-        fns = np.column_stack([lfuncs, rfuncs])
-        reduced_fns = DimReduction(n_components=2, random_state=42).fit_transform(fns.real)
-        fn_i = reduced_fns[:, 0]
-        fn_j = reduced_fns[:, 1]
-
-        scatter = ax.scatter(fn_i, fn_j, c=test_labels, cmap='tab10', vmax=10, alpha=0.7, linewidths=0)
+        scatter = ax.scatter(fni, fnj, c=true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot], cmap='tab10', vmax=10, alpha=0.7, linewidths=0)
 
     # Add space for legend
     plt.subplots_adjust(right=0.95)
@@ -137,7 +125,7 @@ def plot_TNSE(report: dict, configs, test_data, test_labels, transfer_operator_m
                         title="Digits", frameon=False, fontsize=12)  # Adjust legend font size
 
     plt.tight_layout()
-    plt.savefig(configs.data_path + f"/third_figure_eta_{configs.eta}.pdf", format="pdf", dpi=600, bbox_inches='tight')  # Adjust DPI for better quality
+    plt.savefig(str(main_path) + f"/results/third_figure_eta_{configs.eta}.pdf", format="pdf", dpi=600, bbox_inches='tight')  # Adjust DPI for better quality
     plt.show()
 
 def plot_normalized_biased_corr_est(transfer_operator_models, biased_cov_ests, Ns, configs):
@@ -165,7 +153,7 @@ def plot_normalized_biased_corr_est(transfer_operator_models, biased_cov_ests, N
     plt.legend(fontsize=12)
     plt.grid(True)
 
-    plt.savefig(configs.data_path + f"/Normalized_corr_delta_{configs.delta}_biased_p_{configs.eta}.pdf", format="pdf", dpi=300)
+    plt.savefig(str(main_path) + f"/results/Normalized_corr_delta_{configs.delta}_biased_p_{configs.eta}.pdf", format="pdf", dpi=300)
     plt.show()
 
 def plot_normalized_unbiased_corr_est(transfer_operator_models, unbiased_cov_ests,  Ns, configs):
@@ -193,14 +181,14 @@ def plot_normalized_unbiased_corr_est(transfer_operator_models, unbiased_cov_est
     plt.legend(fontsize=12)
     plt.grid(True)
 
-    plt.savefig(configs.data_path + f"/Normalized_corr_delta_{configs.delta}_unbiased_p_{configs.eta}.pdf", format="pdf", dpi=300)
+    plt.savefig(str(main_path) + f"/results/Normalized_corr_delta_{configs.delta}_unbiased_p_{configs.eta}.pdf", format="pdf", dpi=300)
     plt.show()
 
 
 # First figure in the first row
-def plot_biased_estimates(ax, transfer_operator_models, biased_cov_ests, Ns):
+def plot_biased_estimates(ax, models_name, biased_cov_ests, Ns):
     markers = ['o', 's', '^', 'P', 'D', "*"]
-    for i, model_name in enumerate(transfer_operator_models):
+    for i, model_name in enumerate(models_name):
         biased_est_mean = np.mean(biased_cov_ests[model_name], axis=-1)
         biased_est_std = np.std(biased_cov_ests[model_name], axis=-1)
         ax.plot(Ns, biased_est_mean, marker=markers[i], label=model_name, linewidth=2)
@@ -213,9 +201,9 @@ def plot_biased_estimates(ax, transfer_operator_models, biased_cov_ests, Ns):
     ax.grid(True)
 
 # Second figure in the first row
-def plot_unbiased_estimates(ax, transfer_operator_models, unbiased_cov_ests, Ns):
+def plot_unbiased_estimates(ax, models_name, unbiased_cov_ests, Ns):
     markers = ['o', 's', '^', 'P', 'D', "*"]
-    for i, model_name in enumerate(transfer_operator_models):
+    for i, model_name in enumerate(models_name):
         unbiased_est_mean = np.mean(unbiased_cov_ests[model_name], axis=-1)
         unbiased_est_std = np.std(unbiased_cov_ests[model_name], axis=-1)
         ax.plot(Ns, unbiased_est_mean, marker=markers[i], label=model_name, linewidth=2)
@@ -228,11 +216,13 @@ def plot_unbiased_estimates(ax, transfer_operator_models, unbiased_cov_ests, Ns)
     ax.grid(True)
 
 # Third figure in the first row
-def plot_accuracy_ordered_vs_time(ax, report, configs):
-    for model_name in report.keys():
-        t = report[model_name]['times']
-        acc_ordered = report[model_name]['accuracy_ordered']
-        ax.plot(t, acc_ordered, label=model_name.replace('_', ' '))
+def plot_accuracy_ordered_vs_time(ax, models_name, ordered_acc, n_train, configs):
+    for model_name in models_name:
+        acc_ordered_mean = np.mean(ordered_acc[model_name][n_train], axis=0)
+        acc_ordered_std = np.std(ordered_acc[model_name][n_train], axis=0)
+        ax.plot(np.arange(configs.eval_up_to_t), acc_ordered_mean, label=model_name.replace('_', ' '))
+        ax.fill_between(np.arange(configs.eval_up_to_t), acc_ordered_mean - acc_ordered_std, acc_ordered_mean + acc_ordered_std, alpha=0.2)
+
     ax.axhline(1/configs.classes, color='black', linestyle='--', label='Random')
     ax.margins(x=0)
     ax.set_ylim(0, 1.1)
@@ -243,22 +233,22 @@ def plot_accuracy_ordered_vs_time(ax, report, configs):
     ax.grid(True)
     ax.legend(fontsize=10)
 
-# TODO: Make the figure creation function name better
+
 # Function to create the full figure with the required subplots
-def create_figure(transfer_operator_models, biased_cov_ests, unbiased_cov_ests, Ns, report, configs):
+def Plot_first_figure(models_name, biased_cov_ests, unbiased_cov_ests, ordered_acc, Ns, n_train_plot, configs):
     fig = plt.figure(figsize=(9.75, 4.5))  # Width: 14 inches, Height: 5 inches
 
     # First row of subplots
     gs1 = fig.add_gridspec(nrows=1, ncols=3, top=0.95, bottom=0.1, left=0.05, right=0.95, wspace=0.3)
 
     ax1 = fig.add_subplot(gs1[0, 0])
-    plot_biased_estimates(ax1, transfer_operator_models, biased_cov_ests, Ns)
+    plot_biased_estimates(ax1, models_name, biased_cov_ests, Ns)
 
     ax2 = fig.add_subplot(gs1[0, 1])
-    plot_unbiased_estimates(ax2, transfer_operator_models, unbiased_cov_ests, Ns)
+    plot_unbiased_estimates(ax2, models_name, unbiased_cov_ests, Ns)
 
     ax3 = fig.add_subplot(gs1[0, 2])
-    plot_accuracy_ordered_vs_time(ax3, report, configs)
+    plot_accuracy_ordered_vs_time(ax3, models_name, ordered_acc, n_train_plot,configs)
 
-    plt.savefig(configs.data_path + f'/first_figure_eta_{configs.eta}.pdf', dpi = 600, bbox_inches='tight', pad_inches=0.1)
+    plt.savefig(str(main_path) + f'/results/first_figure_eta_{configs.eta}.pdf', dpi = 600, bbox_inches='tight', pad_inches=0.1)
     plt.show()

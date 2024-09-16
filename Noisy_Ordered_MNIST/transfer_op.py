@@ -11,6 +11,7 @@ from kooplearn.models.feature_maps.nn import NNFeatureMap
 from kooplearn.nn.data import collate_context_dataset
 from kooplearn.nn import DPLoss, VAMPLoss
 from kooplearn.data import traj_to_contexts
+from sklearn.manifold import TSNE
 
 
 def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatureMap, test_labels: np.ndarray):
@@ -30,9 +31,23 @@ def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatu
         accuracy_ordered =  (pred_labels == (test_labels + t)% configs.classes).mean()
         report['accuracy'].append(accuracy)
         report['accuracy_ordered'].append(accuracy_ordered)
-        report['image'].append(pred)
-        report['label'].append(pred_labels)
+        report['image'].append(pred[configs.test_seed_idx])
+        report['label'].append(pred_labels[configs.test_seed_idx])
         report['times'].append(t)
+
+
+        vals, lfuncs, rfuncs = model.eig(eval_right_on=test_data, eval_left_on=test_data)
+        # returns the unique values and the index of the first occurrence of a value
+        unique_vals, idx_start = np.unique(np.abs(vals), return_index=True)
+        vals, lfuncs, rfuncs = vals[idx_start], lfuncs[:, idx_start], rfuncs[:, idx_start]
+
+        fns = lfuncs
+        fns = np.column_stack([lfuncs, rfuncs])
+        reduced_fns = TSNE(n_components=2, random_state=configs.rng_seed).fit_transform(fns.real)
+
+        report['fn_i'] = reduced_fns[:, 0]
+        report['fn_j'] = reduced_fns[:, 1]
+
     return report
 
 
