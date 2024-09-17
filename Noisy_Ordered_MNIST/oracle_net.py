@@ -33,7 +33,7 @@ class CNNEncoder(nn.Module):
         torch.manual_seed(configs.rng_seed)
         self.conv1 = nn.Sequential(
             nn.Conv2d(
-                in_channels=1,
+                in_channels=configs.conv1_in_channels,
                 out_channels=configs.conv1_out_channels,  
                 kernel_size=configs.conv1_kernel_size,  
                 stride=configs.conv1_stride,  

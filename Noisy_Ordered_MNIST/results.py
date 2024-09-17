@@ -28,19 +28,19 @@ true_labels = {}
 true_images = {}
 fn_i = {}
 fn_j = {}
-Ns = np.arange(400, configs.train_samples, 400) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+Ns = np.arange(configs.n_train_first, configs.train_samples, configs.n_train_step) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 delta = configs.delta
 models_name = ['Gaussian_RRR',"DPNets", "Classifier_Baseline"]
 
+true_labels = np.load(str(main_path) + f'/results/true_labels_eta_{configs.eta}.npy')
+true_images = np.load(str(main_path) + f'/results/true_images_eta_{configs.eta}.npy')
 for i, model_name in enumerate(models_name):
     model_name = model_name.replace(" ", "")
     biased_cov_ests[model_name] = np.load(str(main_path) + f'/results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy')
     unbiased_cov_ests[model_name] = np.load(str(main_path) + f'/results/unbiased_cov_ests_{model_name}_eta_{configs.eta}.npy')
-    ordered_acc[model_name] = np.load(str(main_path) + f'/results/reports_{model_name}_eta_{configs.eta}.npy')
+    ordered_acc[model_name] = np.load(str(main_path) + f'/results/ordered_acc_{model_name}_eta_{configs.eta}.npy')
     pred_labels[model_name] = np.load(str(main_path) + f'/results/pred_labels_{model_name}_eta_{configs.eta}.npy')
     pred_images[model_name] = np.load(str(main_path) + f'/results/pred_images_{model_name}_eta_{configs.eta}.npy')
-    true_labels[model_name] = np.load(str(main_path) + f'/results/true_labels_{model_name}_eta_{configs.eta}.npy')
-    true_images[model_name] = np.load(str(main_path) + f'/results/true_images_{model_name}_eta_{configs.eta}.npy')
     fn_i[model_name] = np.load(str(main_path) + f'/results/fn_i_{model_name}_eta_{configs.eta}.npy')
     fn_j[model_name] = np.load(str(main_path) + f'/results/fn_j_{model_name}_eta_{configs.eta}.npy')
 

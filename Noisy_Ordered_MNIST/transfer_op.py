@@ -51,7 +51,7 @@ def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatu
     return report
 
 
-def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, test_data: np.ndarray, configs, device: torch.device, test_labels: np.ndarray):
+def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, test_data: np.ndarray, test_labels: np.ndarray, hparam_tuning: bool, configs, device: torch.device):
     """
     Fit the transfer operator models
 
@@ -65,6 +65,11 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
 
     # Hyperparameters tuning for the Gaussian RRR
     # TODO: Implement hyperparameter tuning for the Gaussian RRR 
+    if hparam_tuning:
+        print("Hyperparameter tuning for the Gaussian RRR model")
+        # length_scales, tikhonov_regs = 
+        pass
+
     kernel_model = Kernel(RBF(length_scale=784), reduced_rank = configs.reduced_rank, rank = configs.classes, tikhonov_reg = 1e-7).fit(train_data)
     transfer_operator_models['Gaussian_RRR'] = kernel_model
 

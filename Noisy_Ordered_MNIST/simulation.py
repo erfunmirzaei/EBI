@@ -37,8 +37,7 @@ device = 'gpu' if torch.cuda.is_available() else 'cpu'
 random.seed(configs.rng_seed)
 np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
-#TODO: Handle the following line better(Add some hyperparameters to the configs.yaml file)
-Ns = np.arange(400, configs.train_samples, 400) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+Ns = np.arange(configs.n_train_first, configs.train_samples, configs.n_train_step) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
 delta = configs.delta
 
@@ -66,15 +65,8 @@ pred_images = {
                     'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.eval_up_to_t, configs.oracle_input_size1, configs.oracle_input_size2)),
                     'DPNets':np.empty((n_0, configs.n_repits, configs.eval_up_to_t, configs.oracle_input_size1, configs.oracle_input_size2))}
 
-true_labels = {
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
-                    'DPNets':np.empty((n_0, configs.n_repits, configs.test_samples - 1))}
-
-true_images = {
-                    'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.oracle_input_size1, configs.oracle_input_size2)),
-                    'Classifier_Baseline':np.empty((n_0, configs.n_repits, configs.oracle_input_size1, configs.oracle_input_size2)),
-                    'DPNets':np.empty((n_0, configs.n_repits, configs.oracle_input_size1, configs.oracle_input_size2))}
+true_labels = np.empty((configs.n_repits, configs.test_samples - 1))
+true_images = np.empty((configs.n_repits, configs.test_samples, configs.oracle_input_size1, configs.oracle_input_size2))
 
 fn_i = {
                     'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
@@ -92,6 +84,7 @@ for i in range(configs.n_repits):
     data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
+    hparam_tuning = i == 0 
     # #TODO: Remove the following line
     # # Check if the dataset is different from the previous one
     # if i > 0:
@@ -135,23 +128,24 @@ for i in range(configs.n_repits):
         val_data = traj_to_contexts(new_val_dataset['image'], backend='numpy')
         test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
         test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
+        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, test_labels, hparam_tuning, configs, device)
 
-        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, configs, device, test_labels)
-
+        true_images[i] = Noisy_ordered_MNIST['test']['image']
+        true_labels[i] = test_labels
         for model_name in transfer_operator_models:
             biased_cov_ests[model_name][j][i] = biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
             unbiased_cov_ests[model_name][j][i] = unbiased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
             ordered_acc[model_name][j][i] = report[model_name]['accuracy_ordered']
             pred_labels[model_name][j][i] = report[model_name]['label']
-            true_labels[model_name][j][i] = test_labels
             pred_images[model_name][j][i] = report[model_name]['image']
-            true_images[model_name][j][i] = Noisy_ordered_MNIST['test']['image'][configs.test_seed_idx]
             fn_i[model_name][j][i] = report[model_name]['fn_i']
             fn_j[model_name][j][i] = report[model_name]['fn_j']        
 
         # lower_bound[j][i] = 1 / tau
 
-Path("results").mkdir(parents=True, exist_ok=True)
+# Path("/results").mkdir(parents=True, exist_ok=True)
+np.save(str(main_path) + f'/results/true_labels_eta_{configs.eta}.npy', true_labels)
+np.save(str(main_path) + f'/results/true_images_eta_{configs.eta}.npy', true_images)
 for i, model_name in enumerate(transfer_operator_models):
     model_name = model_name.replace(" ", "")
     np.save(str(main_path) + f'/results/biased_cov_ests_{model_name}_eta_{configs.eta}.npy', biased_cov_ests[model_name])
@@ -159,7 +153,5 @@ for i, model_name in enumerate(transfer_operator_models):
     np.save(str(main_path) + f'/results/ordered_acc_{model_name}_eta_{configs.eta}.npy', ordered_acc[model_name])  
     np.save(str(main_path) + f'/results/pred_labels_{model_name}_eta_{configs.eta}.npy', pred_labels[model_name])
     np.save(str(main_path) + f'/results/pred_images_{model_name}_eta_{configs.eta}.npy', pred_images[model_name])
-    np.save(str(main_path) + f'/results/true_labels_{model_name}_eta_{configs.eta}.npy', true_labels[model_name])
-    np.save(str(main_path) + f'/results/true_images_{model_name}_eta_{configs.eta}.npy', true_images[model_name])
     np.save(str(main_path) + f'/results/fn_i_{model_name}_eta_{configs.eta}.npy', fn_i[model_name])
     np.save(str(main_path) + f'/results/fn_j_{model_name}_eta_{configs.eta}.npy', fn_j[model_name])

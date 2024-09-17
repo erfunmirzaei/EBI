@@ -48,7 +48,7 @@ def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels
 
     for model_idx, model_name in enumerate(models_name):
         ax = axes[model_idx, 0]
-        ax.imshow(np.squeeze(true_images[model_name][configs.n_train_acc_plot][configs.n_rep_plot]), cmap='gray')
+        ax.imshow(np.squeeze(true_images[configs.n_rep_plot][configs.test_seed_idx]), cmap='gray')
         # Remove axes and ticks
         ax.set_xticks([])
         ax.set_yticks([])
@@ -56,7 +56,7 @@ def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels
 
         for t_idx in range(num_cols - 1):
             pred_label = pred_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][t_idx]
-            true_label = (true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][configs.test_seed_idx] + t_idx + 1)%configs.classes
+            true_label = (true_labels[configs.n_rep_plot][configs.test_seed_idx] + t_idx + 1)%configs.classes
             # true_label = test_labels[test_seed_idx + t_idx + 1]
             img = np.squeeze(pred_images[model_name][configs.n_train_acc_plot][configs.n_rep_plot][t_idx])
 
@@ -92,7 +92,7 @@ def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels
         axes[model_idx, 0].text(-0.1, 0.5, model_name.replace('_', ' '), fontsize=14, ha='right', va='center', transform=axes[model_idx, 0].transAxes)
 
     for class_idx in range(num_cols):
-        title = (true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot][configs.test_seed_idx]  + class_idx)%configs.classes
+        title = (true_labels[configs.n_rep_plot][configs.test_seed_idx]  + class_idx)%configs.classes
         if class_idx == 0:
             axes[0, class_idx].set_title(f"Seed: {title}", fontsize=14)
         else:
@@ -115,7 +115,7 @@ def plot_TNSE(models_name:list, fn_i, fn_j, configs,  true_labels):
         fni = fn_i[model_name][configs.n_train_acc_plot][configs.n_rep_plot]
         fnj = fn_j[model_name][configs.n_train_acc_plot][configs.n_rep_plot]
 
-        scatter = ax.scatter(fni, fnj, c=true_labels[model_name][configs.n_train_acc_plot][configs.n_rep_plot], cmap='tab10', vmax=10, alpha=0.7, linewidths=0)
+        scatter = ax.scatter(fni, fnj, c=true_labels[configs.n_rep_plot], cmap='tab10', vmax=10, alpha=0.7, linewidths=0)
 
     # Add space for legend
     plt.subplots_adjust(right=0.95)

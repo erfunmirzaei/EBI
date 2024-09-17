@@ -49,21 +49,6 @@ def parameter_tuning(params, configs):
     """
     Perform parameter tuning for the kernel model on the Noisy Ordered MNIST dataset
     """
-
-    # Run data pipeline
-    data_pipeline.main(configs) # Run data download and preprocessing
-    ordered_MNIST = load_from_disk('__data__') # Load dataset (torch)
-    Noisy_ordered_MNIST = load_from_disk('__data__Noisy') # Load dataset (torch)
-
-    n = configs.train_samples
-    new_train_dataset = Noisy_ordered_MNIST['train'].select(list(range(n)))
-    new_val_dataset = Noisy_ordered_MNIST['validation'].select(range(int(n*configs.val_ratio)))
-    train_data = traj_to_contexts(new_train_dataset['image'], backend='numpy')
-    val_data = traj_to_contexts(new_val_dataset['image'], backend='numpy')
-
-    test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
-    test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
-
     error = np.empty((len(params), 2))
     for iter_idx, iterate in tqdm(enumerate(params), total=len(params)):
         _err = []
