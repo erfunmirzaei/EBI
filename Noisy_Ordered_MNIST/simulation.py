@@ -128,7 +128,7 @@ for i in range(configs.n_repits):
         val_data = traj_to_contexts(new_val_dataset['image'], backend='numpy')
         test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
         test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
-        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, test_data, test_labels, hparam_tuning, configs, device)
+        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, val_data, test_data, test_labels, hparam_tuning, configs, device)
 
         true_images[i] = Noisy_ordered_MNIST['test']['image']
         true_labels[i] = test_labels

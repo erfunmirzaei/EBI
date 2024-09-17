@@ -12,7 +12,8 @@ from kooplearn.nn.data import collate_context_dataset
 from kooplearn.nn import DPLoss, VAMPLoss
 from kooplearn.data import traj_to_contexts
 from sklearn.manifold import TSNE
-
+from sklearn.model_selection import  ParameterGrid
+from tqdm import tqdm
 
 def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatureMap, test_labels: np.ndarray):
     assert model.is_fitted
@@ -35,7 +36,6 @@ def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatu
         report['label'].append(pred_labels[configs.test_seed_idx])
         report['times'].append(t)
 
-
         vals, lfuncs, rfuncs = model.eig(eval_right_on=test_data, eval_left_on=test_data)
         # returns the unique values and the index of the first occurrence of a value
         unique_vals, idx_start = np.unique(np.abs(vals), return_index=True)
@@ -51,7 +51,7 @@ def evaluate_model(model: BaseModel, test_data, configs, oracle: ClassifierFeatu
     return report
 
 
-def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, test_data: np.ndarray, test_labels: np.ndarray, hparam_tuning: bool, configs, device: torch.device):
+def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, val_data:np.ndarray ,test_data: np.ndarray, test_labels: np.ndarray, hparam_tuning: bool, configs, device: torch.device):
     """
     Fit the transfer operator models
 
@@ -63,21 +63,90 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, t
 
     # - Gaussian rank-reduced regression (Gaussian RRR) model
 
+    Gaussian_RRR_length_scale = 784
+    Gausian_RRR_tikhonov_reg = 1e-7
     # Hyperparameters tuning for the Gaussian RRR
-    # TODO: Implement hyperparameter tuning for the Gaussian RRR 
     if hparam_tuning:
         print("Hyperparameter tuning for the Gaussian RRR model")
-        # length_scales, tikhonov_regs = 
-        pass
+        length_scales = np.geomspace(1e-8, 1e3, 20)
+        tikhonov_regs = np.geomspace(1e-8, 1e-1, 20)
+        params = list(
+            ParameterGrid(
+                {
+                    'tikhonov_reg': tikhonov_regs,
+                    'length_scale': length_scales,
+                }
+            )
+        )
+        error = np.empty((len(params), 2))
+        for iter_idx, iterate in tqdm(enumerate(params), total=len(params)):
+            _err = []
+            for i in range(configs.n_repits):
 
-    kernel_model = Kernel(RBF(length_scale=784), reduced_rank = configs.reduced_rank, rank = configs.classes, tikhonov_reg = 1e-7).fit(train_data)
+                try :
+                    model = Kernel(RBF(length_scale= iterate['length_scale']), reduced_rank=True, rank = configs.classes, tikhonov_reg = iterate['tikhonov_reg']).fit(train_data)
+                    _err.append(model.risk(val_data))
+                except:
+                    _err.append(np.inf)
+
+            _err = np.array(_err)
+            error[iter_idx, 0] = np.mean(_err)
+            error[iter_idx, 1] = np.std(_err)
+
+        best_idx = np.argmin(error[:,0])
+        best_params = params[best_idx]
+        print(f"Best length scale is {best_params['length_scale']} and the best tikhonov reg is {best_params['tikhonov_reg']}")
+        print(f"Error: {error[best_idx]}")
+        print("Testing...")
+        model = Kernel(RBF(length_scale= best_params['length_scale']), reduced_rank=True, rank = configs.classes, tikhonov_reg = best_params['tikhonov_reg']).fit(train_data)
+        test_error = model.risk(test_data)
+        print(f"Test error: {test_error}")
+        Gaussian_RRR_length_scale = best_params['length_scale']
+        Gausian_RRR_tikhonov_reg = best_params['tikhonov_reg']
+
+    kernel_model = Kernel(RBF(length_scale=Gaussian_RRR_length_scale), reduced_rank = configs.reduced_rank, rank = configs.classes, tikhonov_reg = Gausian_RRR_tikhonov_reg).fit(train_data)
     transfer_operator_models['Gaussian_RRR'] = kernel_model
 
     # - Nonlinear(CNN encoder) reduced-rank regression model
 
     # Hyperparameters tuning for the Nonlinear reduced-rank regression model
-    # TODO: Implement hyperparameter tuning for the Nonlinear reduced-rank regression model
-    classifier_model = Nonlinear(oracle, reduced_rank= configs.reduced_rank, rank=configs.classes).fit(train_data)
+    CNN_RRR_tikhonov_reg = 1e-7
+    if hparam_tuning:
+        print("Hyperparameter tuning for the CNN RRR model")
+        tikhonov_regs = np.geomspace(1e-8, 1e-1, 20)
+        params = list(
+            ParameterGrid(
+                {
+                    'tikhonov_reg': tikhonov_regs,
+                }
+            )
+        )
+        error = np.empty((len(params), 2))
+        for iter_idx, iterate in tqdm(enumerate(params), total=len(params)):
+            _err = []
+            for i in range(configs.n_repits):
+
+                try :
+                    model = Nonlinear(oracle, reduced_rank= configs.reduced_rank, rank=configs.classes, tikhonov_reg = iterate['tikhonov_reg']).fit(train_data)
+                    _err.append(model.risk(val_data))
+                except:
+                    _err.append(np.inf)
+
+            _err = np.array(_err)
+            error[iter_idx, 0] = np.mean(_err)
+            error[iter_idx, 1] = np.std(_err)
+
+        best_idx = np.argmin(error[:,0])
+        best_params = params[best_idx]
+        print(f"The best tikhonov reg is {best_params['tikhonov_reg']}")
+        print(f"Error: {error[best_idx]}")
+        print("Testing...")
+        model = Nonlinear(oracle, reduced_rank= configs.reduced_rank, rank=configs.classes, tikhonov_reg = best_params['tikhonov_reg']).fit(train_data)
+        test_error = model.risk(test_data)
+        print(f"Test error: {test_error}")
+        CNN_RRR_tikhonov_reg = best_params['tikhonov_reg']
+
+    classifier_model = Nonlinear(oracle, reduced_rank= configs.reduced_rank, rank=configs.classes, tikhonov_reg= CNN_RRR_tikhonov_reg).fit(train_data)
     transfer_operator_models['Classifier_Baseline'] = classifier_model
 
     # - Nonlinear(DPNets encoder) reduced-rank regression model

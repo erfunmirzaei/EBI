@@ -92,7 +92,7 @@ def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels
         axes[model_idx, 0].text(-0.1, 0.5, model_name.replace('_', ' '), fontsize=14, ha='right', va='center', transform=axes[model_idx, 0].transAxes)
 
     for class_idx in range(num_cols):
-        title = (true_labels[configs.n_rep_plot][configs.test_seed_idx]  + class_idx)%configs.classes
+        title = int((true_labels[configs.n_rep_plot][configs.test_seed_idx]  + class_idx)%configs.classes)
         if class_idx == 0:
             axes[0, class_idx].set_title(f"Seed: {title}", fontsize=14)
         else:
