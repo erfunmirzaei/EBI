@@ -2,15 +2,15 @@
 rng_seed: 42 # random seed
 eta: 0.05 # noise level
 classes: 5 # number of classes
-train_samples: 1001 # number of training samples
+train_samples: 10001 # number of training samples
 test_samples: 1001 # number of test samples
 val_ratio: 0.2 # validation ratio
 
 # experiment parameters
 delta: 0.05 # confidence level
 n_repits: 2 # number of repetitions
-n_train_first: 400 # number of training samples in the first step 
-n_train_step: 400 # number of training samples in each step
+n_train_first: 500 # number of training samples in the first step 
+n_train_step: 500 # number of training samples in each step
 
 # plot parameters
 eval_up_to_t: 15 # number of steps to forecast

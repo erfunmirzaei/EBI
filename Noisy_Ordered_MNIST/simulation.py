@@ -66,7 +66,7 @@ pred_images = {
                     'DPNets':np.empty((n_0, configs.n_repits, configs.eval_up_to_t, configs.oracle_input_size1, configs.oracle_input_size2))}
 
 true_labels = np.empty((configs.n_repits, configs.test_samples - 1))
-true_images = np.empty((configs.n_repits, configs.test_samples, configs.oracle_input_size1, configs.oracle_input_size2))
+true_images = np.empty((configs.n_repits, configs.test_samples, configs.conv1_in_channels, configs.oracle_input_size1, configs.oracle_input_size2))
 
 fn_i = {
                     'Gaussian_RRR':np.empty((n_0, configs.n_repits, configs.test_samples - 1)),
