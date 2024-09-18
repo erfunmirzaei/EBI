@@ -79,12 +79,11 @@ fn_j = {
 
 # lower_bound = np.empty((n_0, configs.n_repits))
 
-for i in range(configs.n_repits):
+for i in tqdm(range(configs.n_repits)):
     # Load the dataset
     data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
-    hparam_tuning = i == 0 
     # #TODO: Remove the following line
     # # Check if the dataset is different from the previous one
     # if i > 0:
@@ -95,7 +94,7 @@ for i in range(configs.n_repits):
 
     # ordered_MNIST_prev = ordered_MNIST
     
-    for j in tqdm(range(len(Ns))):
+    for j in range(len(Ns)):
         n = Ns[j]
 
         for tau in range(1,n):
@@ -128,7 +127,7 @@ for i in range(configs.n_repits):
         val_data = traj_to_contexts(new_val_dataset['image'], backend='numpy')
         test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
         test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
-        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, val_data, test_data, test_labels, hparam_tuning, configs, device)
+        transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, val_data, test_data, test_labels, configs, device)
 
         true_images[i] = Noisy_ordered_MNIST['test']['image']
         true_labels[i] = test_labels
