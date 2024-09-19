@@ -4,22 +4,23 @@ from tqdm import tqdm
 from corr_est_cov_est import biased_covariance_estimator, unbiased_covariance_estimator
 from utils import get_divisors
 
-def Covariance_Estimation(data_points, n, delta, length_scale, configs):
+def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
     for tau in range(1,n):
         if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 :
             min_tau = tau
             break
     
     gauss_kernel = RBF(length_scale=length_scale)
-    c_h = 1
-    L = 2 * c_h
-    sigma = c_h
     divisors = np.array(list(get_divisors(n)))
     divisors = list(np.sort(divisors[divisors > min_tau]))
     taus = [divisor for divisor in divisors if (n / divisor) % 2 == 0 ]
     n_0 = len(taus)
     data_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
     data_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
+
+    c_h = 1
+    L = 2 * c_h
+    sigma = c_h
     pess_bound = np.empty((n_0, configs.n_repits))
 
     for i in tqdm(range(configs.n_repits)):    
