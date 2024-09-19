@@ -8,7 +8,7 @@ val_ratio: 0.2 # validation ratio
 
 # experiment parameters
 delta: 0.05 # confidence level
-n_repits: 2 # number of repetitions
+n_repits: 10 # number of repetitions
 n_train_first: 500 # number of training samples in the first step 
 n_train_step: 500 # number of training samples in each step
 
