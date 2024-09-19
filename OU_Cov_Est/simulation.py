@@ -29,8 +29,11 @@ from kooplearn.data import traj_to_contexts
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.model_selection import  ParameterGrid
 import time
+from data_pipeline import make_dataset
 CV = True
 
 main_path = Path(__file__).parent
 data_path = main_path / "__data__"
 configs = ml_confs.from_file(main_path / "configs.yaml")
+
+data_points = make_dataset(configs)
