@@ -37,7 +37,7 @@ device = 'gpu' if torch.cuda.is_available() else 'cpu'
 random.seed(configs.rng_seed)
 np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
-Ns = np.arange(configs.n_train_first, configs.train_samples, configs.n_train_step) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
+Ns = np.arange(configs.n_train_first, int(configs.val_ratio * configs.train_samples), configs.n_train_step) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
 delta = configs.delta
 
