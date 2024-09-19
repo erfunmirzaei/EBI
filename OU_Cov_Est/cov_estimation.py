@@ -15,13 +15,14 @@ def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
     divisors = list(np.sort(divisors[divisors > min_tau]))
     taus = [divisor for divisor in divisors if (n / divisor) % 2 == 0 ]
     n_0 = len(taus)
-    data_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
-    data_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
-
+    M_emp_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
+    M_emp_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
+    Pinelis_emp_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
+    Pinelis_emp_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
     c_h = 1
     L = 2 * c_h
     sigma = c_h
-    pess_bound = np.empty((n_0, configs.n_repits))
+    Pinelis_bound = np.empty((n_0, configs.n_repits))
 
     for i in tqdm(range(configs.n_repits)):    
         X = data_points[0:n][:,i]
@@ -35,16 +36,18 @@ def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
             # print(delta - 2*(m-1)*beta_coeff)
 
             l_tau = np.log(4/(delta - 2*(m-1)*beta_coeff))
-            
-            pess_bound[j][i] = (((2 * L ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau
+            L_tau = np.log(2/(delta - 2*(m-1)*beta_coeff))
+
+            Pinelis_bound[j][i] = (((2 * L ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau
             
             cov_biased = biased_covariance_estimator(kernel_matrix, tau= tau)
-            data_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m)
+            M_emp_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m)
+            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/(m))*l_tau + (l_tau/m)
             
             cov_unbiased = unbiased_covariance_estimator(kernel_matrix, tau= tau)
             # print(cov_biased, cov_unbiased)
-            data_bound_unbiased_cov_est[j][i] = ((13*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m)
+            M_emp_bound_unbiased_cov_est[j][i] = ((13*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m)
             # biased_bounds.append(biased_covariance_estimator(kernel_matrix, tau= tau))
             # unbiased_bounds.append(unbiased_covariance_estimator(kernel_matrix, tau= tau))
     
-    return pess_bound, data_bound_biased_cov_est, data_bound_unbiased_cov_est, taus
+    return Pinelis_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus
