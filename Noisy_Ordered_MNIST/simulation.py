@@ -125,11 +125,11 @@ for i in tqdm(range(configs.n_repits)):
         new_val_dataset = Noisy_ordered_MNIST['validation'].select(range(int(n*configs.val_ratio)))
 
         val_data = traj_to_contexts(new_val_dataset['image'], backend='numpy')
-        test_data = traj_to_contexts(Noisy_ordered_MNIST['test']['image'], backend='numpy')
-        test_labels = np.take(Noisy_ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
+        test_data = traj_to_contexts(ordered_MNIST['test']['image'], backend='numpy')
+        test_labels = np.take(ordered_MNIST['test']['label'], np.squeeze(test_data.idx_map.lookback(1))).detach().cpu().numpy()
         transfer_operator_models, report, C_H, B_H, kernel_matrices = fit_transfer_operator_models(new_train_dataset, oracle, val_data, test_data, test_labels, configs, device)
 
-        true_images[i] = Noisy_ordered_MNIST['test']['image']
+        true_images[i] = ordered_MNIST['test']['image']
         true_labels[i] = test_labels
         for model_name in transfer_operator_models:
             biased_cov_ests[model_name][j][i] = biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])

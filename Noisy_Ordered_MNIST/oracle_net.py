@@ -70,9 +70,8 @@ class CNNEncoder(nn.Module):
         X = self.conv2(X)
         # Flatten the output of conv2
         X = X.view(X.size(0), -1)
-        output = self.out(X)
-        
-        return output
+        # output = self.out(X)
+        return X
 
 # Following kooplearn implementations, we define a Pytorch Lightning module and then wrap it in a TrainableFeatureMap
 class ClassifierModule(lightning.LightningModule):
