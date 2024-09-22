@@ -71,7 +71,7 @@ def fit_transfer_operator_models(train_dataset , oracle: ClassifierFeatureMap, v
 
     # - Nonlinear(CNN encoder) reduced-rank regression model
 
-    CNN_RRR_tikhonov_reg = 1e-7
+    CNN_RRR_tikhonov_reg = 1e-7 #TODO: Change it back to without regularization
     
     classifier_model = Nonlinear(oracle, reduced_rank= configs.reduced_rank, rank=configs.classes, tikhonov_reg= CNN_RRR_tikhonov_reg).fit(train_data)
     transfer_operator_models['Classifier_Baseline'] = classifier_model
