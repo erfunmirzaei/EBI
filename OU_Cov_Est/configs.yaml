@@ -2,5 +2,8 @@ n_repits: 30
 n_train_points: 40000 
 n_val_points: 0
 n_test_points: 0
+delta: 0.05
 rank: 3
 tikhonov_reg: 0.0001
+n_sample_est_tr: 10000
+n_repits_est_tr: 100

@@ -1,8 +1,9 @@
 import numpy as np
-from sklearn.gaussian_process.kernels import RBF
 from tqdm import tqdm
 from corr_est_cov_est import biased_covariance_estimator, unbiased_covariance_estimator
 from utils import get_divisors
+from sklearn.gaussian_process.kernels import RBF
+from src import OU_process 
 
 def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
     for tau in range(1,n):
@@ -53,17 +54,20 @@ def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
 
     return Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus
 
-def Cov_Est(data_points, Ns, delta, length_scale):
+def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
     gauss_kernel = RBF(length_scale=length_scale)
+    n_0 = len(Ns)
+    M_bound = np.empty((n_0, configs.n_repits))
+    M_emp_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
+    M_emp_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
+    Pinelis_bound = np.empty((n_0, configs.n_repits))
+    Pinelis_emp_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
+    Pinelis_emp_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
+    True_value = np.empty((n_0, configs.n_repits))
     c_h = 1
     L = 2 * c_h
-    sigma = c_h
-
-    n_0 = len(Ns)
-    data_bound_biased_cov_est = np.empty((n_0, configs.n_repits))
-    data_bound_unbiased_cov_est = np.empty((n_0, configs.n_repits))
-    pess_bound = np.empty((n_0, configs.n_repits))
-    True_value = np.empty((n_0, configs.n_repits))
+    sigma = c_h 
+    
 
     for i in range(configs.n_repits):    
         X = data_points[0:Ns[-1]][:,i]
@@ -73,9 +77,9 @@ def Cov_Est(data_points, Ns, delta, length_scale):
         print("SALAVAT")   
 
         trace_C2 = np.sqrt(1/(1+4/(length_scale*length_scale)))
-        B = 10000
-        T = 100
-        data_points2 = OU_process.sample(B, num_trajectories= T)
+        n_sample_est_tr = configs.n_sample_est_tr 
+        n_repits_est_tr = configs.n_repits_est_tr
+        data_points2 = OU_process.sample(n_sample_est_tr, num_trajectories= n_repits_est_tr)
             
         for j in range(len(Ns)):
             n = Ns[j]
@@ -83,10 +87,10 @@ def Cov_Est(data_points, Ns, delta, length_scale):
             
             trace_C_hat2 = (np.linalg.norm(kernel_matrix)**2)/(n*n)
             trace_C_C_hat = 0
-            for t in tqdm(range(T)):
+            for t in tqdm(range(n_repits_est_tr)):
                 X_prime = data_points2[:,t]
                 X_prime = X_prime.reshape(X_prime.shape[0], -1) 
-                c = (np.linalg.norm(gauss_kernel(X_prime,X[0:n]))**2)/(B*n*T)
+                c = (np.linalg.norm(gauss_kernel(X_prime,X[0:n]))**2)/(n_sample_est_tr*n*n_repits_est_tr)
                 trace_C_C_hat += c
             
             # print( trace_C2, - (2*trace_C_C_hat),trace_C_hat2)
@@ -99,21 +103,19 @@ def Cov_Est(data_points, Ns, delta, length_scale):
             beta_coeff = np.exp((1/np.exp(1) - 1) *tau)
             m = n / (2*tau)
             # print(delta - 2*(m-1)*beta_coeff)
-
             l_tau = np.log(4/(delta - 2*(m-1)*beta_coeff))
-            
-            pess_bound[j][i] = (((2 * L ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau
-            True_value[j][i] = np.sqrt(abs(trace_C2 - (2*trace_C_C_hat) + trace_C_hat2))
-            
+            L_tau = np.log(2/(delta - 2*(m-1)*beta_coeff))
+        
             cov_biased = biased_covariance_estimator(kernel_matrix, tau= tau)
-            data_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m)
-            
             cov_unbiased = unbiased_covariance_estimator(kernel_matrix, tau= tau)
             # print(cov_biased, cov_unbiased)
-            data_bound_unbiased_cov_est[j][i] = ((13*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m)
-            # biased_bounds.append(biased_covariance_estimator(kernel_matrix, tau= tau))
-            # unbiased_bounds.append(unbiased_covariance_estimator(kernel_matrix, tau= tau))
-            # print(pess_bound[j][i], data_bound_unbiased_cov_est[j][i], data_bound_biased_cov_est[j][i], True_value[j][i])
+            M_bound[j][i] = (4*c_h)/(3*m) + (2*l_tau + 1)*sigma*np.sqrt(2/n)
+            M_emp_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + (2*l_tau + 1)*np.sqrt((cov_biased)/m) # Theorem 2
+            M_emp_bound_unbiased_cov_est[j][i] = ((11*c_h)/(m))*l_tau + (2*l_tau + 1)*np.sqrt((cov_unbiased)/m) # Theorem 3
+
+            Pinelis_bound[j][i] = (((2 * L ) / m)  + (2 * np.sqrt(2)* sigma)/np.sqrt(n))* l_tau # Apply lemma 2 to Pinelis
+            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*l_tau*(2+np.sqrt(2*L_tau)) + 2*l_tau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
+            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*l_tau*(1+np.sqrt(4*L_tau)) + 2*l_tau*np.sqrt(cov_unbiased/m)
         
         del kernel_Matrix
         del X
@@ -121,4 +123,4 @@ def Cov_Est(data_points, Ns, delta, length_scale):
         del cov_biased
         del cov_unbiased
 
-    return pess_bound, data_bound_biased_cov_est, data_bound_unbiased_cov_est, True_value
+    return Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, True_value
