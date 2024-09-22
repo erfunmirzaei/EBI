@@ -1,6 +1,6 @@
 # Data generation parameters
 rng_seed: 42 # random seed
-eta: 0.05 # noise level
+eta: 0.1 # noise level
 classes: 5 # number of classes
 train_samples: 10001 # number of training samples
 test_samples: 1001 # number of test samples
@@ -15,7 +15,7 @@ n_train_step: 500 # number of training samples in each step
 # plot parameters
 eval_up_to_t: 15 # number of steps to forecast
 test_seed_idx: 0 # index of the test seed for the plot
-n_train_acc_plot: 15 # number of training samples to plot the accuracy
+n_train_acc_plot: 0 # number of training samples to plot the accuracy
 n_rep_plot: 4 # The repetition to plot the accuracy
 
 # Model parameters
