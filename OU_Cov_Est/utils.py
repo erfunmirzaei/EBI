@@ -97,7 +97,7 @@ def plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pineli
     lines = []
     for i, length_scale in enumerate(length_scales):
         show_ylabel = (i == 0)  # Only show y-axis label on the first subplot
-        lines += plot_OU_tau_length_scale(axes[i],Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus, length_scale, show_ylabel=show_ylabel)
+        lines += plot_OU_tau_length_scale(axes[i],Pinelis_bound[i], Pinelis_emp_bound_biased_cov_est[i], Pinelis_emp_bound_unbiased_cov_est[i], M_bound[i], M_emp_bound_biased_cov_est[i], M_emp_bound_unbiased_cov_est[i], taus[i], length_scale, show_ylabel=show_ylabel)
 
     # Create a common legend
     labels = ["Pinelis bound", "Pinelis emp. bound (biased cov. est.)", "Pinelis emp. bound (unbiased cov. est.)", "M bound", "M emp. bound (biased cov. est.)", "M emp. bound (unbiased cov. est.)"]
@@ -251,7 +251,7 @@ def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_
     lines = []
     for i, length_scale in enumerate(length_scales):
         show_ylabel = (i == 0)  # Only show y-axis label on the first subplot
-        lines += plot_OU_N_length_scale(axes[i], Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scale, show_ylabel=show_ylabel)
+        lines += plot_OU_N_length_scale(axes[i], Pinelis_bound[i], Pinelis_emp_bound_biased_cov_est[i], Pinelis_emp_bound_unbiased_cov_est[i], M_bound[i], M_emp_bound_biased_cov_est[i], M_emp_bound_unbiased_cov_est[i],True_value[i], Ns, length_scale, show_ylabel=show_ylabel)
 
     # Create a common legend
     labels = ["Pinelis bound", "Pinelis emp. bound (biased cov. est.)", "Pinelis emp. bound (unbiased cov. est.)", "M bound", "M emp. bound (biased cov. est.)", "M emp. bound (unbiased cov. est.)", "Estimated True value"]

@@ -20,28 +20,28 @@ main_path = Path(__file__).parent
 data_path = main_path / "__data__"
 configs = ml_confs.from_file(main_path / "configs.yaml")
 
-# # First Experiment: Plot the bounds for different values of tau
-# length_scales = [0.05, 0.5, 5]
-# Pinelis_bound = []
-# Pinelis_emp_bound_biased_cov_est = []
-# Pinelis_emp_bound_unbiased_cov_est = []
-# M_bound = []
-# M_emp_bound_biased_cov_est = []
-# M_emp_bound_unbiased_cov_est = []
-# taus = []
+# First Experiment: Plot the bounds for different values of tau
+length_scales = [0.05, 0.5, 5]
+Pinelis_bound = []
+Pinelis_emp_bound_biased_cov_est = []
+Pinelis_emp_bound_unbiased_cov_est = []
+M_bound = []
+M_emp_bound_biased_cov_est = []
+M_emp_bound_unbiased_cov_est = []
+taus = []
 
-# for l in length_scales:
-#     Pinelis_bound = np.load(str(main_path) + f'/results/Pinelis_bound_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     Pinelis_emp_bound_biased_cov_est = np.load(str(main_path) + f'/results/Pinelis_emp_bound_biased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     Pinelis_emp_bound_unbiased_cov_est = np.load(str(main_path) + f'/results/Pinelis_emp_bound_unbiased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     M_bound = np.load(str(main_path) + f'/results/M_bound_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     M_emp_bound_biased_cov_est = np.load(str(main_path) + f'/results/M_emp_bound_biased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     M_emp_bound_unbiased_cov_est = np.load(str(main_path) + f'/results/M_emp_bound_unbiased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy')
-#     taus = np.load(str(main_path) + f'/results/taus_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy') 
+for l in length_scales:
+    Pinelis_bound.append(np.load(str(main_path) + f'/results/Pinelis_bound_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    Pinelis_emp_bound_biased_cov_est.append(np.load(str(main_path) + f'/results/Pinelis_emp_bound_biased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    Pinelis_emp_bound_unbiased_cov_est.append(np.load(str(main_path) + f'/results/Pinelis_emp_bound_unbiased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    M_bound.append(np.load(str(main_path) + f'/results/M_bound_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    M_emp_bound_biased_cov_est.append(np.load(str(main_path) + f'/results/M_emp_bound_biased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    M_emp_bound_unbiased_cov_est.append(np.load(str(main_path) + f'/results/M_emp_bound_unbiased_cov_est_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
+    taus.append(np.load(str(main_path) + f'/results/taus_n_{configs.n_plot_tau}_delta_{configs.delta}_l_{l}.npy'))
 
-# # Plot the bounds for different values of tau
-# print('Plotting bounds for different values of tau')
-# plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus, length_scales)
+# Plot the bounds for different values of tau
+print('Plotting bounds for different values of tau')
+plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus, length_scales)
 
 
 # Second Experiment: Plot the bounds for different values of N
@@ -58,13 +58,13 @@ M_emp_bound_unbiased_cov_est = []
 True_value = []
 
 for l in length_scales:
-    Pinelis_bound = np.load(str(main_path) + f'/results/Pinelis_bound_delta_{configs.delta}_l_{l}.npy')
-    Pinelis_emp_bound_biased_cov_est = np.load(str(main_path) + f'/results/Pinelis_emp_bound_biased_cov_est_delta_{configs.delta}_l_{l}.npy')
-    Pinelis_emp_bound_unbiased_cov_est = np.load(str(main_path) + f'/results/Pinelis_emp_bound_unbiased_cov_est_delta_{configs.delta}_l_{l}.npy')
-    M_bound = np.load(str(main_path) + f'/results/M_bound_delta_{configs.delta}_l_{l}.npy')
-    M_emp_bound_biased_cov_est = np.load(str(main_path) + f'/results/M_emp_bound_biased_cov_est_delta_{configs.delta}_l_{l}.npy')
-    M_emp_bound_unbiased_cov_est = np.load(str(main_path) + f'/results/M_emp_bound_unbiased_cov_est_delta_{configs.delta}_l_{l}.npy')
-    True_value = np.load(str(main_path) + f'/results/True_value_delta_{configs.delta}_l_{l}.npy')
+    Pinelis_bound.append(np.load(str(main_path) + f'/results/Pinelis_bound_delta_{configs.delta}_l_{l}.npy'))
+    Pinelis_emp_bound_biased_cov_est.append(np.load(str(main_path) + f'/results/Pinelis_emp_bound_biased_cov_est_delta_{configs.delta}_l_{l}.npy'))
+    Pinelis_emp_bound_unbiased_cov_est.append(np.load(str(main_path) + f'/results/Pinelis_emp_bound_unbiased_cov_est_delta_{configs.delta}_l_{l}.npy'))
+    M_bound.append(np.load(str(main_path) + f'/results/M_bound_delta_{configs.delta}_l_{l}.npy'))
+    M_emp_bound_biased_cov_est.append(np.load(str(main_path) + f'/results/M_emp_bound_biased_cov_est_delta_{configs.delta}_l_{l}.npy'))
+    M_emp_bound_unbiased_cov_est.append(np.load(str(main_path) + f'/results/M_emp_bound_unbiased_cov_est_delta_{configs.delta}_l_{l}.npy'))
+    True_value.append(np.load(str(main_path) + f'/results/True_value_delta_{configs.delta}_l_{l}.npy'))
 
 # Plot the bounds for different values of N
 print('Plotting bounds for different values of N')
