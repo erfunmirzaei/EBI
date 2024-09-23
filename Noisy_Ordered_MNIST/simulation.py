@@ -142,7 +142,7 @@ for i in tqdm(range(configs.n_repits)):
 
         # lower_bound[j][i] = 1 / tau
 
-Path("/results").mkdir(parents=True, exist_ok=True)
+Path(main_path / "results").mkdir(parents=True, exist_ok=True)
 np.save(str(main_path) + f'/results/true_labels_eta_{configs.eta}.npy', true_labels)
 np.save(str(main_path) + f'/results/true_images_eta_{configs.eta}.npy', true_images)
 for i, model_name in enumerate(transfer_operator_models):

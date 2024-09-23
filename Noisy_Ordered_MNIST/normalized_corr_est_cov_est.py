@@ -30,7 +30,8 @@ def unbiased_covariance_estimator(cov_mtx, tau, c_h, b_h):
     for signed in [1,-1]:
         for i in range(2,n, 2):
             diag_blocks = torch.diagonal(block_cov_matrix, offset=i*signed, dim1=0, dim2=1)
-            sum -= torch.sum(torch.pow(diag_blocks,2)) / (m-1)
+            if m > 1:
+                sum -= torch.sum(torch.pow(diag_blocks,2)) / (m-1)
 
     # print(plus_term, minus_term)
     if sum < 0:

@@ -69,10 +69,10 @@ def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
     sigma = c_h 
     
 
-    for i in range(configs.n_repits):    
+    for i in tqdm(range(configs.n_repits)):    
         X = data_points[0:Ns[-1]][:,i]
         X = X.reshape(X.shape[0], -1)
-        print(X.shape)
+        # print(X.shape)
         kernel_Matrix = gauss_kernel(X, X)
         print("SALAVAT")   
 
@@ -87,7 +87,7 @@ def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
             
             trace_C_hat2 = (np.linalg.norm(kernel_matrix)**2)/(n*n)
             trace_C_C_hat = 0
-            for t in tqdm(range(n_repits_est_tr)):
+            for t in range(n_repits_est_tr):
                 X_prime = data_points2[:,t]
                 X_prime = X_prime.reshape(X_prime.shape[0], -1) 
                 c = (np.linalg.norm(gauss_kernel(X_prime,X[0:n]))**2)/(n_sample_est_tr*n*n_repits_est_tr)
@@ -116,6 +116,8 @@ def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
             Pinelis_bound[j][i] = (((2 * L ) / m)  + (2 * np.sqrt(2)* sigma)/np.sqrt(n))* l_tau # Apply lemma 2 to Pinelis
             Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*l_tau*(2+np.sqrt(2*L_tau)) + 2*l_tau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
             Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*l_tau*(1+np.sqrt(4*L_tau)) + 2*l_tau*np.sqrt(cov_unbiased/m)
+
+            True_value[j][i] = np.sqrt(abs(trace_C2 - (2*trace_C_C_hat) + trace_C_hat2))
         
         del kernel_Matrix
         del X
