@@ -10,6 +10,9 @@ delta: 0.05 # confidence level
 n_sample_est_tr: 10000
 n_repits_est_tr: 100
 n_train_first: 500
+
+n_sample_thresh: 10000
+
 # plot parameters
 n_plot_tau: 10000 # number of points to plot bounds versus tau
 

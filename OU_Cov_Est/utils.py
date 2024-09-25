@@ -123,7 +123,6 @@ def plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pineli
     plt.tight_layout(rect=[0, 0, 1, 0.85])
     plt.subplots_adjust(top=0.85)  # Add more space between title and legend
     plt.savefig(str(main_path) + f"/results/OU_Exp_tau_n_{configs.n_plot_tau}_delta_{configs.delta}.pdf", format="pdf", dpi=600)
-    plt.show()
 
 def plot_OU_N_length_scale(ax, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scale, show_ylabel=False):
     Pinelis_bound_mean = np.mean(Pinelis_bound, axis=-1)
@@ -277,4 +276,3 @@ def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_
     plt.tight_layout(rect=[0, 0, 1, 0.85])
     plt.subplots_adjust(top=0.85)  # Add more space between title and legend
     plt.savefig(str(main_path) + f"/results/OU_Exp_N_n_{configs.n_plot_tau}_delta_{configs.delta}.pdf", format="pdf", dpi=600)
-    plt.show()
