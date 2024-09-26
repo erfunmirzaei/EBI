@@ -163,7 +163,7 @@ def Cov_Est_N2(data_points, Ns, delta, length_scale, configs):
         for j in range(len(Ns)):
             n = Ns[j]
             for tau in range(1,n):
-                if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 and (n_sample_est_tr / tau) % 2 == 0:
+                if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0: #and (n_sample_est_tr / tau) % 2 == 0:
                     min_tau = tau
                     break
             
