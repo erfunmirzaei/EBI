@@ -7,7 +7,7 @@ from src import OU_process
 
 def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
     for tau in range(1,n):
-        if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 :
+        if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau): #and (n / tau) % 2 == 0 :
             min_tau = tau
             break
     
