@@ -7,7 +7,7 @@ n_test_points: 0 # number of test samples
 
 # Experiment parameters
 delta: 0.05 # confidence level
-n_sample_est_tr: 20000
+n_sample_est_tr: 10000
 n_repits_est_tr: 100
 n_train_first: 500
 
