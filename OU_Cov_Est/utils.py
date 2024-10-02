@@ -241,7 +241,7 @@ def plot_OU_N_length_scale(ax, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, 
 #     plt.savefig(str(main_path) + f"/results/OU_Exp_delta_{delta}_l_{length_scale}.pdf", format="pdf", dpi=900)
 #     plt.show()
 
-def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scales, show_ylabel=False):
+def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scales, labels, show_ylabel=False):
 
     # Create a figure with 3 subplots in a row, single-column width (3.25 inches)
     fig, axes = plt.subplots(1, len(length_scales), figsize=(3.25 * 3, 4.5))  # Adjust height as needed for visibility
@@ -253,7 +253,6 @@ def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_
         lines += plot_OU_N_length_scale(axes[i], Pinelis_bound[i], Pinelis_emp_bound_biased_cov_est[i], Pinelis_emp_bound_unbiased_cov_est[i], M_bound[i], M_emp_bound_biased_cov_est[i], M_emp_bound_unbiased_cov_est[i],True_value[i], Ns, length_scale, show_ylabel=show_ylabel)
 
     # Create a common legend
-    labels = ["Pinelis bound", "Pinelis emp. bound (biased cov. est.)", "Pinelis emp. bound (unbiased cov. est.)", "M bound", "M emp. bound (biased cov. est.)", "M emp. bound (unbiased cov. est.)", "Estimated True value"]
     n_labels = len(labels)
     import matplotlib.lines as mlines
 

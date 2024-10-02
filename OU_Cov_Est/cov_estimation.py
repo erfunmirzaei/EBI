@@ -36,21 +36,20 @@ def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
             beta_coeff = np.exp((1/np.exp(1) - 1) *tau)
             m = n / (2*tau)
             # print(delta - 2*(m-1)*beta_coeff)
-
+            ltau = np.log(8/(delta - 2*(m-1)*beta_coeff))
             l_tau = np.log(4/(delta - 2*(m-1)*beta_coeff))
             L_tau = np.log(2/(delta - 2*(m-1)*beta_coeff))
-            Ltau = np.log(1/(delta - 2*(m-1)*beta_coeff))
 
             cov_biased = biased_covariance_estimator(kernel_matrix, tau= tau)
             cov_unbiased = unbiased_covariance_estimator(kernel_matrix, tau= tau)
             # print(cov_biased, cov_unbiased)
-            M_bound[j][i] = (4*c_h)/(3*m)*Ltau + (2*Ltau + 1)*sigma*np.sqrt(1/m) # Apply lemma 2 to Theorem 4
+            M_bound[j][i] = (4*c_h)/(3*m)*L_tau + np.sqrt(((2*L_tau + 1)*2*(sigma**2))/m) # Apply lemma 2 to Theorem 4
             M_emp_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m) # Theorem 2
             M_emp_bound_unbiased_cov_est[j][i] = ((11*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m) # Theorem 3
 
-            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* L_tau # Apply lemma 2 to Pinelis
-            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*l_tau*(2+np.sqrt(2*L_tau)) + 2*l_tau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
-            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*l_tau*(1+np.sqrt(4*L_tau)) + 2*l_tau*np.sqrt(cov_unbiased/m)
+            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau # Apply lemma 2 to Pinelis
+            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*ltau*(2+np.sqrt(2*l_tau)) + 2*ltau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
+            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*ltau*(1+np.sqrt(4*l_tau)) + 2*ltau*np.sqrt(cov_unbiased/m)
             
 
     return Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus
@@ -105,9 +104,9 @@ def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
             beta_coeff = np.exp((1/np.exp(1) - 1) *tau)
             m = n / (2*tau)
             # print(delta - 2*(m-1)*beta_coeff)
+            ltau = np.log(8/(delta - 2*(m-1)*beta_coeff))
             l_tau = np.log(4/(delta - 2*(m-1)*beta_coeff))
             L_tau = np.log(2/(delta - 2*(m-1)*beta_coeff))
-            Ltau = np.log(1/(delta - 2*(m-1)*beta_coeff))
 
             cov_biased = biased_covariance_estimator(kernel_matrix, tau= tau)
             cov_unbiased = unbiased_covariance_estimator(kernel_matrix, tau= tau)
@@ -118,13 +117,13 @@ def Cov_Est_N(data_points, Ns, delta, length_scale, configs):
             # data_bound_unbiased_cov_est[j][i] = ((13*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m)
             # Cov_biased[j][i] = cov_biased
             # Cov_unbiased[j][i] = cov_unbiased
-            M_bound[j][i] = (4*c_h)/(3*m)*Ltau + (2*Ltau + 1)*sigma*np.sqrt(1/m) # Apply lemma 2 to Theorem 4
+            M_bound[j][i] = (4*c_h)/(3*m)*L_tau + np.sqrt(((2*L_tau + 1)*2*(sigma**2))/m) # Apply lemma 2 to Theorem 4
             M_emp_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m) # Theorem 2
             M_emp_bound_unbiased_cov_est[j][i] = ((11*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m) # Theorem 3
 
-            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* L_tau # Apply lemma 2 to Pinelis
-            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*l_tau*(2+np.sqrt(2*L_tau)) + 2*l_tau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
-            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*l_tau*(1+np.sqrt(4*L_tau)) + 2*l_tau*np.sqrt(cov_unbiased/m)
+            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau # Apply lemma 2 to Pinelis
+            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*ltau*(2+np.sqrt(2*l_tau)) + 2*ltau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
+            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*ltau*(1+np.sqrt(4*l_tau)) + 2*ltau*np.sqrt(cov_unbiased/m)
 
             True_value[j][i] = np.sqrt(abs(trace_C2 - (2*trace_C_C_hat) + trace_C_hat2))
         
@@ -219,21 +218,20 @@ def Cov_Est_N2(data_points, Ns, delta, length_scale, configs):
             # print( trace_C2, - (2*trace_C_C_hat),trace_C_hat2)
             beta_coeff = np.exp((1/np.exp(1) - 1) *tau)
             # print(delta - 2*(m-1)*beta_coeff)
+            ltau = np.log(8/(delta - 2*(m-1)*beta_coeff))
             l_tau = np.log(4/(delta - 2*(m-1)*beta_coeff))
             L_tau = np.log(2/(delta - 2*(m-1)*beta_coeff))
-            Ltau = np.log(1/(delta - 2*(m-1)*beta_coeff))
-
             # print(cov_biased, cov_unbiased)
             # Cov_biased[j][i] = cov_biased
             # Cov_unbiased[j][i] = cov_unbiased
 
-            M_bound[j][i] = (4*c_h)/(3*m)*Ltau + (2*Ltau + 1)*sigma*np.sqrt(1/m) # Apply lemma 2 to Theorem 4
+            M_bound[j][i] = (4*c_h)/(3*m)*L_tau + np.sqrt(((2*L_tau + 1)*2*(sigma**2))/m) # Apply lemma 2 to Theorem 4
             M_emp_bound_biased_cov_est[j][i] = ((16*c_h)/(3*m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_biased)/m) # Theorem 2
             M_emp_bound_unbiased_cov_est[j][i] = ((11*c_h)/(m))*l_tau + np.sqrt(((2*l_tau + 1)*cov_unbiased)/m) # Theorem 3
 
-            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* L_tau # Apply lemma 2 to Pinelis
-            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*l_tau*(2+np.sqrt(2*L_tau)) + 2*l_tau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
-            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*l_tau*(1+np.sqrt(4*L_tau)) + 2*l_tau*np.sqrt(cov_unbiased/m)
+            Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau # Apply lemma 2 to Pinelis
+            Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*ltau*(2+np.sqrt(2*l_tau)) + 2*ltau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
+            Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*ltau*(1+np.sqrt(4*l_tau)) + 2*ltau*np.sqrt(cov_unbiased/m)
 
             True_value[j][i] = np.sqrt(abs(trace_C2 - (2*trace_C_C_hat) + trace_C_hat2))
         
