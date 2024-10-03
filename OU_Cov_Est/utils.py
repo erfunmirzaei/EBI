@@ -124,13 +124,13 @@ def plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pineli
     plt.subplots_adjust(top=0.85)  # Add more space between title and legend
     plt.savefig(str(main_path) + f"/results/OU_Exp_tau_n_{configs.n_plot_tau}_delta_{configs.delta}.pdf", format="pdf", dpi=600)
 
-def plot_OU_N_length_scale(ax, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scale, show_ylabel=False):
+def plot_OU_N_length_scale(ax, Pinelis_bound, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, length_scale, show_ylabel=False):
     Pinelis_bound_mean = np.mean(Pinelis_bound, axis=-1)
     Pinelis_bound_std = np.std(Pinelis_bound, axis=-1)
-    Pinelis_emp_bound_biased_cov_est_mean = np.mean(Pinelis_emp_bound_biased_cov_est, axis=-1)
-    Pinelis_emp_bound_biased_cov_est_std = np.std(Pinelis_emp_bound_biased_cov_est, axis=-1)
-    Pinelis_emp_bound_unbiased_cov_est_mean = np.mean(Pinelis_emp_bound_unbiased_cov_est, axis=-1)
-    Pinelis_emp_bound_unbiased_cov_est_std = np.std(Pinelis_emp_bound_unbiased_cov_est, axis=-1)
+    # Pinelis_emp_bound_biased_cov_est_mean = np.mean(Pinelis_emp_bound_biased_cov_est, axis=-1)
+    # Pinelis_emp_bound_biased_cov_est_std = np.std(Pinelis_emp_bound_biased_cov_est, axis=-1)
+    # Pinelis_emp_bound_unbiased_cov_est_mean = np.mean(Pinelis_emp_bound_unbiased_cov_est, axis=-1)
+    # Pinelis_emp_bound_unbiased_cov_est_std = np.std(Pinelis_emp_bound_unbiased_cov_est, axis=-1)
 
     M_bound_mean = np.mean(M_bound, axis=-1)
     M_bound_std = np.std(M_bound, axis=-1)
@@ -147,13 +147,13 @@ def plot_OU_N_length_scale(ax, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, 
     ax.fill_between(Ns, Pinelis_bound_mean - Pinelis_bound_std,
                         Pinelis_bound_mean + Pinelis_bound_std, alpha=0.2)
     
-    line2 = ax.loglog(Ns, Pinelis_emp_bound_biased_cov_est_mean, marker='s', label="Pinelis emp. bound (biased cov. est.)", linewidth=1)
-    ax.fill_between(Ns, Pinelis_emp_bound_biased_cov_est_mean - Pinelis_emp_bound_biased_cov_est_std,
-                        Pinelis_emp_bound_biased_cov_est_mean + Pinelis_emp_bound_biased_cov_est_std, alpha=0.2)
+    # line2 = ax.loglog(Ns, Pinelis_emp_bound_biased_cov_est_mean, marker='s', label="Pinelis emp. bound (biased cov. est.)", linewidth=1)
+    # ax.fill_between(Ns, Pinelis_emp_bound_biased_cov_est_mean - Pinelis_emp_bound_biased_cov_est_std,
+    #                     Pinelis_emp_bound_biased_cov_est_mean + Pinelis_emp_bound_biased_cov_est_std, alpha=0.2)
     
-    line3 = ax.loglog(Ns, Pinelis_emp_bound_unbiased_cov_est_mean, marker='x', label="Pinelis emp. bound (unbiased cov. est.)", linewidth=1)
-    ax.fill_between(Ns, Pinelis_emp_bound_unbiased_cov_est_mean - Pinelis_emp_bound_unbiased_cov_est_std,
-                        Pinelis_emp_bound_unbiased_cov_est_mean + Pinelis_emp_bound_unbiased_cov_est_std, alpha=0.2)
+    # line3 = ax.loglog(Ns, Pinelis_emp_bound_unbiased_cov_est_mean, marker='x', label="Pinelis emp. bound (unbiased cov. est.)", linewidth=1)
+    # ax.fill_between(Ns, Pinelis_emp_bound_unbiased_cov_est_mean - Pinelis_emp_bound_unbiased_cov_est_std,
+    #                     Pinelis_emp_bound_unbiased_cov_est_mean + Pinelis_emp_bound_unbiased_cov_est_std, alpha=0.2)
     
     line4 = ax.loglog(Ns, M_bound_mean, marker='^', label="M bound", linewidth=1)
     ax.fill_between(Ns, M_bound_mean - M_bound_std,
@@ -178,7 +178,7 @@ def plot_OU_N_length_scale(ax, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, 
     ax.tick_params(axis='both', which='major', labelsize=10)
     ax.grid(True)
 
-    return line1, line2, line3, line4, line5, line6, line7
+    return line1, line4, line5, line6, line7
 
 # def plot_OU_N_length_scale(Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est,True_value, Ns, delta, length_scale):
 #     Pinelis_bound_mean = np.mean(Pinelis_bound, axis=-1)
@@ -250,7 +250,7 @@ def plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_
     lines = []
     for i, length_scale in enumerate(length_scales):
         show_ylabel = (i == 0)  # Only show y-axis label on the first subplot
-        lines += plot_OU_N_length_scale(axes[i], Pinelis_bound[i], Pinelis_emp_bound_biased_cov_est[i], Pinelis_emp_bound_unbiased_cov_est[i], M_bound[i], M_emp_bound_biased_cov_est[i], M_emp_bound_unbiased_cov_est[i],True_value[i], Ns, length_scale, show_ylabel=show_ylabel)
+        lines += plot_OU_N_length_scale(axes[i], Pinelis_bound[i], M_bound[i], M_emp_bound_biased_cov_est[i], M_emp_bound_unbiased_cov_est[i],True_value[i], Ns, length_scale, show_ylabel=show_ylabel)
 
     # Create a common legend
     n_labels = len(labels)
