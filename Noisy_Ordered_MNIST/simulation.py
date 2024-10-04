@@ -39,7 +39,6 @@ np.random.seed(configs.rng_seed)
 torch.manual_seed(configs.rng_seed)
 Ns = np.arange(configs.n_train_first, int((1-configs.val_ratio) * configs.train_samples)+1, configs.n_train_step) # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 n_0 = len(Ns)
-delta = configs.delta
 
 biased_cov_ests = {
                    'Gaussian_RRR':np.empty((n_0, configs.n_repits)),
@@ -84,23 +83,15 @@ for i in tqdm(range(configs.n_repits)):
     data_pipeline.main(configs, data_path, noisy_data_path) # Run data download and preprocessing
     ordered_MNIST = load_from_disk(data_path) # Load dataset (torch)
     Noisy_ordered_MNIST = load_from_disk(noisy_data_path) # Load dataset (torch)
-    # #TODO: Remove the following line
-    # # Check if the dataset is different from the previous one
-    # if i > 0:
-    #     for key in ordered_MNIST:
-    #         if torch.equal(ordered_MNIST[key]['image'], ordered_MNIST_prev[key]['image']) and torch.equal(ordered_MNIST[key]['label'], ordered_MNIST_prev[key]['label']):
-    #             print(f"Error: The dataset is the same as the previous one. Repitition {i} is the same as repitition {i-1}")
-    #             break
-
-    # ordered_MNIST_prev = ordered_MNIST
     
     for j in range(len(Ns)):
         n = Ns[j]
-
         for tau in range(1,n):
-            if delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau) and (n / tau) % 2 == 0 :
-                min_tau = tau
-                break
+            if  (n / tau) % 2 == 0:
+                m = n/(2*tau)
+                if configs.delta >= 2*(m - 1)*np.exp(-configs.eta*tau):
+                    min_tau = tau
+                    break
         tau = min_tau # tau = 25
 
         oracle_train_dl = DataLoader(ordered_MNIST['train'].select(range(n)), batch_size=configs.oracle_batch_size, shuffle=True)

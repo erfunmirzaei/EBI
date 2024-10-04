@@ -21,7 +21,7 @@ data_path = main_path / "__data__"
 configs = ml_confs.from_file(main_path / "configs.yaml")
 
 # First Experiment: Plot the bounds for different values of tau
-length_scales = [0.05, 0.5, 5]
+length_scales = [0.05, 0.1, 0.15]
 Pinelis_bound = []
 Pinelis_emp_bound_biased_cov_est = []
 Pinelis_emp_bound_unbiased_cov_est = []
@@ -45,9 +45,9 @@ plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_em
 
 
 # Second Experiment: Plot the bounds for different values of N
-length_scales = [0.05, 0.5, 5]
+length_scales = [0.05, 0.1, 0.15]
 # Ns = np.arange(configs.n_train_first, configs.n_sample_est_tr, configs.n_train_step) 
-Ns = [500,1000,2000, 5000, 10000, 20000,40000]
+Ns = [500,1000,2000, 5000, 10000, 20000,40000, 80000]
 
 Pinelis_bound = []
 Pinelis_emp_bound_biased_cov_est = []
