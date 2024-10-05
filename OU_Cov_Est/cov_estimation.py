@@ -50,7 +50,6 @@ def Covariance_Estimation_tau(data_points, n, delta, length_scale, configs):
             Pinelis_bound[j][i] = (((4 * c_h ) / m)  + (2 * sigma)/np.sqrt(m))* l_tau # Apply lemma 2 to Pinelis
             Pinelis_emp_bound_biased_cov_est[j][i] = ((2*c_h)/m)*ltau*(2+np.sqrt(2*l_tau)) + 2*ltau*np.sqrt(cov_biased/m) # Apply cov biased estimation to pinelis and then lemma 2
             Pinelis_emp_bound_unbiased_cov_est[j][i] = ((4*c_h)/m)*ltau*(1+np.sqrt(4*l_tau)) + 2*ltau*np.sqrt(cov_unbiased/m)
-            
 
     return Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus
 
@@ -208,9 +207,10 @@ def Cov_Est_N2(data_points, Ns, delta, length_scale, configs):
                     for t in range(n_repits_est_tr):
                         X_prime = data_points2[:,t]
                         X_prime = X_prime.reshape(X_prime.shape[0], -1) 
-                        c = (np.linalg.norm(gauss_kernel(X_prime,X[k*configs.n_sample_thresh:(k+1)*configs.n_sample_thresh]))**2)/(n_sample_est_tr*n*n_repits_est_tr)
+                        c = (np.linalg.norm(gauss_kernel(X_prime,X[k*configs.n_sample_thresh:(k+1)*configs.n_sample_thresh]))**2)
                         trace_C_C_hat += c
-                
+                        
+                    trace_C_C_hat = trace_C_C_hat/(n_sample_est_tr*n*n_repits_est_tr)
                 cov_biased = cov_biased / n_parts            
                 cov_unbiased = max(cov_biased - cov_unbiased, 0)
 
