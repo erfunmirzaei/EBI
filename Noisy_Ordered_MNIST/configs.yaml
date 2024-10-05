@@ -1,6 +1,6 @@
 # Data generation parameters
 rng_seed: 42 # random seed
-eta: 0.1 # noise level
+eta: 0.05 # noise level
 classes: 5 # number of classes
 train_samples: 10001 # number of training samples
 test_samples: 1001 # number of test samples
