@@ -23,7 +23,7 @@ from kooplearn.data import traj_to_contexts
 from tqdm import tqdm
 from transfer_op import fit_transfer_operator_models
 from oracle_net import ClassifierFeatureMap
-from normalized_corr_est_cov_est import biased_covariance_estimator, unbiased_covariance_estimator
+from normalized_corr_est_cov_est import normalized_biased_covariance_estimator, normalized_unbiased_covariance_estimator
 
 
 # Load configs
@@ -123,8 +123,8 @@ for i in tqdm(range(configs.n_repits)):
         true_images[i] = ordered_MNIST['test']['image']
         true_labels[i] = test_labels
         for model_name in transfer_operator_models:
-            biased_cov_ests[model_name][j][i] = biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
-            unbiased_cov_ests[model_name][j][i] = unbiased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
+            biased_cov_ests[model_name][j][i] = normalized_biased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
+            unbiased_cov_ests[model_name][j][i] = normalized_unbiased_covariance_estimator(kernel_matrices[model_name], tau= tau, c_h=C_H[model_name], b_h = B_H[model_name])
             ordered_acc[model_name][j][i] = report[model_name]['accuracy_ordered']
             pred_labels[model_name][j][i] = report[model_name]['label']
             pred_images[model_name][j][i] = report[model_name]['image']

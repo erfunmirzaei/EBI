@@ -11,14 +11,14 @@ def make_block_matrices(matrix, tau):
 
     return block_matrix_result
 
-def biased_covariance_estimator(cov_mtx, tau, c_h, b_h):
+def normalized_biased_covariance_estimator(cov_mtx, tau, c_h, b_h):
     n = cov_mtx.shape[0]
     block_cov_matrix = make_block_matrices(cov_mtx,tau)
     block_cov_matrix = (block_cov_matrix - b_h) / (c_h - b_h) # Normalize the block covariance matrix
     diag_blocks = torch.diagonal(torch.from_numpy(block_cov_matrix), offset=0, dim1=0, dim2=1)
     return torch.sum(torch.pow(diag_blocks,2))/(n*tau)
 
-def unbiased_covariance_estimator(cov_mtx, tau, c_h, b_h):
+def normalized_unbiased_covariance_estimator(cov_mtx, tau, c_h, b_h):
     n = cov_mtx.shape[0]
     m = n / (2*tau)
     block_cov_matrix = make_block_matrices(cov_mtx,tau)

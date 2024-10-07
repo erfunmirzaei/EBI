@@ -196,21 +196,21 @@ def Cov_Est_N2(data_points, Ns, delta, length_scale, configs):
                 for k in range(n_parts):
                     for l in range(n_parts):
                         kernel_matrix = gauss_kernel(X[k*configs.n_sample_thresh:(k+1)*configs.n_sample_thresh], X[l*configs.n_sample_thresh:(l+1)*configs.n_sample_thresh])
+                        trace_C_hat2 += (np.linalg.norm(kernel_matrix)**2)/(n*n)
                         if k == l:
                             cov_biased += biased_covariance_estimator(kernel_matrix, tau= tau)
                             cov_unbiased += sum_off_diagonals(kernel_matrix, tau=tau)/(2*m*(m - 1))
                         else:
                             cov_unbiased += sum_diagonals(kernel_matrix, tau= tau)/(2*m*(m - 1))
 
-                        trace_C_hat2 += (np.linalg.norm(kernel_matrix)**2)/(n*n)
                     
                     for t in range(n_repits_est_tr):
                         X_prime = data_points2[:,t]
                         X_prime = X_prime.reshape(X_prime.shape[0], -1) 
                         c = (np.linalg.norm(gauss_kernel(X_prime,X[k*configs.n_sample_thresh:(k+1)*configs.n_sample_thresh]))**2)
                         trace_C_C_hat += c
-                        
-                    trace_C_C_hat = trace_C_C_hat/(n_sample_est_tr*n*n_repits_est_tr)
+
+                trace_C_C_hat = trace_C_C_hat/(n_sample_est_tr*n*n_repits_est_tr)
                 cov_biased = cov_biased / n_parts            
                 cov_unbiased = max(cov_biased - cov_unbiased, 0)
 
