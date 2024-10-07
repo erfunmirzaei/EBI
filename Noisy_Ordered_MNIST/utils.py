@@ -41,7 +41,7 @@ def plot_oracle_metrics(metrics: Metrics):
 def plot_image_forecast(true_labels, true_images, models_name: list, pred_labels: dict, pred_images: dict, configs):
     num_models = len(models_name)
     num_cols = configs.eval_up_to_t + 1
-    fig, axes = plt.subplots(num_models, num_cols, figsize=(9.75, 3), sharex=True, sharey=True)
+    fig, axes = plt.subplots(num_models, num_cols, figsize=(9.75, 1.5), sharex=True, sharey=True)
 
     # Remove margins between columns
     plt.subplots_adjust(wspace=0)

@@ -30,7 +30,7 @@ fn_i = {}
 fn_j = {}
 Ns = np.arange(configs.n_train_first, int((1-configs.val_ratio) * configs.train_samples)+1, configs.n_train_step)  # Ns = [500,1000,1500,2000,2500,3000,3500,4000,4500,5000,5500,6000,6500,7000,7500,8000]
 delta = configs.delta
-models_name = ['Gaussian_RRR',"DPNets", "Classifier_Baseline"]
+models_name = ['Gaussian_RRR',"DPNets"]
 
 true_labels = np.load(str(main_path) + f'/results/true_labels_eta_{configs.eta}.npy')
 true_images = np.load(str(main_path) + f'/results/true_images_eta_{configs.eta}.npy')
