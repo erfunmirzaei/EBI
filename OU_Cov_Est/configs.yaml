@@ -1,13 +1,13 @@
 # Data generation parameters
 rng_seed: 42 # random seed
-n_repits: 1 # number of repetitions
+n_repits: 10 # number of repetitions
 n_train_points: 40000 # number of training samples
 n_val_points: 0 # number of validation samples
 n_test_points: 0 # number of test samples
 
 # Experiment parameters
 delta: 0.05 # confidence level
-n_sample_est_tr: 10000
+n_sample_est_tr: 20000
 n_repits_est_tr: 100
 n_train_first: 500
 
