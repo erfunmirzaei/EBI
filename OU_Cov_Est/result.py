@@ -41,7 +41,8 @@ for l in length_scales:
 
 # Plot the bounds for different values of tau
 print('Plotting bounds for different values of tau')
-plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus, length_scales)
+labels = ["Pinelis bound", "New Pessimistic bound", "EBI(biased)", "EBI(unbiased)", "Estimated True value"]
+plot_OU_tau(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, taus, length_scales, labels)
 
 
 # Second Experiment: Plot the bounds for different values of N
@@ -68,6 +69,6 @@ for l in length_scales:
 
 # Plot the bounds for different values of N
 print('Plotting bounds for different values of N')
-labels = ["Pinelis bound", "M bound", "M emp. bound (biased cov. est.)", "M emp. bound (unbiased cov. est.)", "Estimated True value"]
+labels = ["Pinelis bound", "New Pessimistic bound", "EBI(biased)", "EBI(unbiased)", "Estimated True value"]
 plot_OU_N(configs, Pinelis_bound, Pinelis_emp_bound_biased_cov_est, Pinelis_emp_bound_unbiased_cov_est, M_bound, M_emp_bound_biased_cov_est, M_emp_bound_unbiased_cov_est, True_value, Ns, length_scales, labels)
           
