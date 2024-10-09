@@ -14,7 +14,7 @@ n_train_first: 500
 n_sample_thresh: 10000
 
 # plot parameters
-n_plot_tau: 10000 # number of points to plot bounds versus tau
+n_plot_tau: 20000 # number of points to plot bounds versus tau
 
 # Model parameters
 rank: 3 # rank of the reduced ranks model
