@@ -5,8 +5,7 @@ from sklearn.gaussian_process.kernels import RBF
 from kooplearn.models import Linear, Nonlinear, Kernel
 from kooplearn.data import traj_to_contexts
 
-
-def risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamda, length_scale, configs):
+def risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamdas, length_scale, configs):
     
     """
     Compute the risk bounds for different values of N
@@ -31,32 +30,34 @@ def risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamda, length_
             X_ts = X_ts.reshape(X_ts.shape[0], -1)
             test_data = traj_to_contexts(X_ts, backend='numpy')
 
+
+            # Compute the empirical risk
+            lamda = lamdas[j]['tikhonov_reg']
+            r = configs.rank
+            c_h = 1
+            # RRR Estimator
+            kernel_model = Kernel(RBF(length_scale= length_scale), reduced_rank = configs.reduced_rank, rank = r, tikhonov_reg = lamda).fit(train_data)
+            # S_hat_Star = np.conj(kernel_model.kernel_X).T
+            # Z_hat = kernel_model.kernel_Y
+            K = kernel_model.kernel_X / n
+            L = kernel_model.kernel_Y / n
+            U = kernel_model.U
+            V = kernel_model.V
+            norm_est = np.trace(U.T @ K @ U @ V.T @ L @ V)
             for tau in range(1,n):
                 # TODO: This is for OU process only. You can change this to any other process
                 if (n / tau) % 2 == 0: 
-                    if configs.delta >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau):
+                    if configs.delta/(2*norm_est) >= 2*(n/(2*tau) - 1)*np.exp(-(np.exp(1) -  1)/np.exp(1)*tau):
                         min_tau = tau
                         break
             
             tau = min_tau 
             beta_coeff = np.exp((1/np.exp(1) - 1) *tau)
-            m = n / (2*tau)
-            l_tau = np.log(12/(configs.delta - 2*(m-1)*beta_coeff))
-
             beta_coeff_prime = np.exp((1/np.exp(1) - 1) *(tau -1))
-            L_tau = np.log(12/(configs.delta - 2*(m-1)*beta_coeff_prime))
-            # Compute the empirical risk
-            
-            kernel_model = Kernel(RBF(length_scale= length_scale), reduced_rank = configs.reduced_rank, rank = configs.rank, tikhonov_reg = lamda).fit(train_data)
-            r = configs.rank
-            c_h = 1
-            # RRR Estimator
-            S_hat_Star = np.conj(kernel_model.kernel_X).T
-            Z_hat = kernel_model.kernel_Y
-            U = kernel_model.U
-            V = kernel_model.V
-            gamma = np.linalg.norm(S_hat_Star @ U @ V.T @ Z_hat, ord = 2)
-            # TODO: Compute the empirical risk for train data or test data?
+            m = n / (2*tau)
+            l_tau = np.log(12/((configs.delta/(2*norm_est))- 2*(m-1)*beta_coeff))
+            L_tau = np.log(12/((configs.delta/(2*norm_est)) - 2*(m-1)*beta_coeff_prime))
+            # Compute the empirical risk for train data and test data
             emp_risk[j,i] = kernel_model.risk(train_data)
             test_emp_risk[j,i] = kernel_model.risk(test_data)
 
@@ -65,7 +66,6 @@ def risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamda, length_
             biased_cov_est = biased_covariance_estimator(kernel_matrix, tau)
             unbiased_cov_est = unbiased_covariance_estimator(kernel_matrix, tau)
 
-            # TODO: What does this tau - 1 mean in order to calculate the cross covariance estimation??
             # TODO: How do you choose lamda?? Excess risk bounds
             T_hat = kernel_model.kernel_YX
             biased_cross_cov_est = biased_covariance_estimator(T_hat, tau)
@@ -76,9 +76,12 @@ def risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamda, length_
             Ys = diag_elss.mean(axis = 1)
             V_D = 2*np.var(Ys, ddof=1)
 
-            first_term = ((((16*gamma+32*np.sqrt(r))*gamma*c_h)/(3*m)) + ((7*c_h)/(3*(m-1))))*l_tau
-            second_term = np.sqrt(((2*l_tau + 1)*(2*gamma*gamma*(gamma*gamma*biased_cov_est + r*biased_cross_cov_est)))/m)
-            third_term = np.sqrt((V_D*l_tau)/m)
-            risk_bound[j,i] = first_term + second_term + third_term
+            First_term = ((128*(norm_est**2)*c_h*tau)/(3*n))*l_tau 
+            Second_term = ((128*np.sqrt(r)*norm_est*c_h*tau)/(3*n))*L_tau 
+            Third_term = ((7*c_h)/(3*(m-1)))*l_tau
+            Fourth_term = np.sqrt(((2*l_tau + 1)*32*(norm_est**4)*tau*biased_cov_est)/n)
+            Fifth_term = np.sqrt(((2*L_tau + 1)*8*r*(norm_est**2)*tau*biased_cross_cov_est)/n)
+            Sixth_term = np.sqrt((2*V_D*tau*l_tau)/n)
+            risk_bound[j,i] = First_term + Second_term + Third_term + Fourth_term + Fifth_term + Sixth_term 
             
     return emp_risk, risk_bound, test_emp_risk

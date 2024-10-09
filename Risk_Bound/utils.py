@@ -37,32 +37,42 @@ def get_divisors(n):
     for prime_power_combo in itertools.product(*powers):
         yield prod(prime_power_combo)
 
-def plot_risk_bound_N_length_scale(ax, emp_risk, upper_bound, lower_bound, test_emp_risk, Ns, length_scale, show_ylabel=False):
-    emp_risk_mean = np.mean(emp_risk, axis=-1)
-    emp_risk_std = np.std(emp_risk, axis=-1)
-    upper_bound_mean = np.mean(upper_bound, axis=-1)
-    upper_bound_std = np.std(upper_bound, axis=-1)
-    lower_bound_mean = np.mean(lower_bound, axis=-1)
-    lower_bound_std = np.std(lower_bound, axis=-1)
-    test_emp_risk_mean = np.mean(test_emp_risk, axis=-1)
-    test_emp_risk_std = np.std(test_emp_risk, axis=-1)
+def plot_risk_bound_N_length_scale(ax, emp_risk, emp_bound, test_emp_risk, Ns, length_scale, show_ylabel=False):
+    # emp_risk_mean = np.mean(emp_risk, axis=-1)
+    # emp_risk_std = np.std(emp_risk, axis=-1)
+    emp_risk_error = np.abs(emp_risk - test_emp_risk)
+    emp_risk_error_mean = np.mean(emp_risk_error, axis=-1)
+    emp_risk_error_std = np.std(emp_risk_error, axis=-1)
+    emp_bound_mean = np.mean(emp_bound, axis=-1)
+    emp_bound_std = np.std(emp_bound, axis=-1)
+    # # Lower bound should be non-negative
+    # lower_bound = np.maximum(lower_bound, 0)
+    # lower_bound_mean = np.mean(lower_bound, axis=-1)
+    # lower_bound_std = np.std(lower_bound, axis=-1)
+    
+    # test_emp_risk_mean = np.mean(test_emp_risk, axis=-1)
+    # test_emp_risk_std = np.std(test_emp_risk, axis=-1)
 
     # Plot with larger figure size and font sizes
-    line1 = ax.loglog(Ns, emp_risk_mean, marker='o', label="Empirical risk", linewidth=1)
-    ax.fill_between(Ns, emp_risk_mean - emp_risk_std,
-                        emp_risk_mean + emp_risk_std, alpha=0.2)
-    
-    line2 = ax.loglog(Ns, upper_bound_mean, marker='s', label="Upper Bound", linewidth=1)
-    ax.fill_between(Ns, upper_bound_mean - upper_bound_std,
-                        upper_bound_mean + upper_bound_std, alpha=0.2)
-    
-    line3 = ax.loglog(Ns, lower_bound_mean, marker='^', label="Lower Bound", linewidth=1)
-    ax.fill_between(Ns, lower_bound_mean - lower_bound_std,
-                        lower_bound_mean + lower_bound_std, alpha=0.2)
+    # line1 = ax.loglog(Ns, emp_risk_mean, marker='o', label="Empirical risk", linewidth=1)
+    # ax.fill_between(Ns, emp_risk_mean - emp_risk_std,
+    #                     emp_risk_mean + emp_risk_std, alpha=0.2)
 
-    line4 = ax.loglog(Ns, test_emp_risk_mean, marker='x', label="Test empirical risk", linewidth=1)
-    ax.fill_between(Ns, test_emp_risk_mean - test_emp_risk_std,
-                        test_emp_risk_mean + test_emp_risk_std, alpha=0.2)
+    line1 = ax.loglog(Ns, emp_risk_error_mean, marker='o', label="Empirical risk(Test-Train)", linewidth=1)
+    ax.fill_between(Ns, emp_risk_error_mean - emp_risk_error_std,
+                        emp_risk_error_mean + emp_risk_error_std, alpha=0.2)
+    
+    line2 = ax.loglog(Ns, emp_bound_mean, marker='s', label="Empirical Bound", linewidth=1)
+    ax.fill_between(Ns, emp_bound_mean - emp_bound_std,
+                        emp_bound_mean + emp_bound_std, alpha=0.2)
+    
+    # line3 = ax.loglog(Ns, lower_bound_mean, marker='^', label="Lower Bound", linewidth=1)
+    # ax.fill_between(Ns, lower_bound_mean - lower_bound_std,
+    #                     lower_bound_mean + lower_bound_std, alpha=0.2)
+
+    # line4 = ax.loglog(Ns, test_emp_risk_mean, marker='x', label="Test empirical risk", linewidth=1)
+    # ax.fill_between(Ns, test_emp_risk_mean - test_emp_risk_std,
+    #                     test_emp_risk_mean + test_emp_risk_std, alpha=0.2)
     
     ax.set_xlabel("Number of training samples", fontsize=10)
     if show_ylabel:
@@ -71,7 +81,7 @@ def plot_risk_bound_N_length_scale(ax, emp_risk, upper_bound, lower_bound, test_
     ax.tick_params(axis='both', which='major', labelsize=10)
     ax.grid(True)
 
-    return line1, line2, line3, line4
+    return line1, line2
 
 def plot_risk_bound_N(configs, emp_risk, risk_bound, test_emp_risk, Ns, length_scales, labels, show_ylabel=False):
 
@@ -82,7 +92,7 @@ def plot_risk_bound_N(configs, emp_risk, risk_bound, test_emp_risk, Ns, length_s
     lines = []
     for i, length_scale in enumerate(length_scales):
         show_ylabel = (i == 0)  # Only show y-axis label on the first subplot
-        lines += plot_risk_bound_N_length_scale(axes[i], emp_risk[i], emp_risk[i] + risk_bound[i], emp_risk[i] - risk_bound[i], test_emp_risk[i], Ns, length_scale, show_ylabel=show_ylabel)
+        lines += plot_risk_bound_N_length_scale(axes[i], emp_risk[i], risk_bound[i], test_emp_risk[i], Ns, length_scale, show_ylabel=show_ylabel)
 
     # Create a common legend
     n_labels = len(labels)

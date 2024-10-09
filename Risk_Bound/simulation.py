@@ -16,6 +16,7 @@ import ml_confs
 import numpy as np
 from data_pipeline import make_dataset
 from risk_bound import risk_bound_N_OU
+from hparam_tuning import parameter_tuning
 
 # Load configs
 main_path = Path(__file__).parent
@@ -35,10 +36,17 @@ test_dataset = data_points[configs.n_train_points + configs.n_val_points+2:]
 # Experiment 1: Plot the bounds for different values of tau
 
 # Ns = np.arange(configs.n_train_first, configs.n_sample_est_tr, configs.n_train_step) 
-Ns = [500,1000,2000, 5000, 10000]
+Ns = [500, 1000, 2000, 5000, 10000]
 length_scales = [0.05, 0.15, 0.25]
+
+# Perform parameter tuning
 for l in length_scales:
-    emp_risk, risk_bound, test_emp_risk = risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, configs.lamda, l, configs)
+    lamdas, _ = parameter_tuning(train_dataset, val_dataset, test_dataset, Ns, l, configs)
+    np.save(str(main_path) + f'/results/lamdas_delta_{configs.delta}_l_{l}.npy', lamdas)
+
+# # Compute the risk bounds
+# for l in length_scales:
+    emp_risk, risk_bound, test_emp_risk = risk_bound_N_OU(train_dataset, val_dataset, test_dataset, Ns, lamdas, l, configs)
     np.save(str(main_path) + f'/results/emp_risk_delta_{configs.delta}_l_{l}_reg_{configs.lamda}.npy', emp_risk)
     np.save(str(main_path) + f'/results/risk_bound_delta_{configs.delta}_l_{l}_reg_{configs.lamda}.npy', risk_bound)
     np.save(str(main_path) + f'/results/test_emp_risk_delta_{configs.delta}_l_{l}_reg_{configs.lamda}.npy', test_emp_risk)
